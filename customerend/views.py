@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from account.permissions import IsCustomer
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class CustomerHomeAPIView(APIView):
     """
@@ -17,6 +17,6 @@ class CustomerHomeAPIView(APIView):
     permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
-        #logger.info(f"Customer {request.user.username} accessed customer home.")
+        logger.info(f"Customer {request.user.username} accessed customer home.")
 
         return Response({"message":"Welcome home customer"}, status=status.HTTP_200_OK)

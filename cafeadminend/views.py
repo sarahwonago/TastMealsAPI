@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from account.permissions import IsAdmin
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class CafeadminHomeAPIView(APIView):
     """
@@ -17,6 +17,6 @@ class CafeadminHomeAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
-        # logger.info(f"Cafeadmin {request.user.username} accessed cafeadmin home.")
+        logger.info(f"Cafeadmin {request.user.username} accessed cafeadmin home.")
 
         return Response({"message":"Welcome home cafeadmin"}, status=status.HTTP_200_OK)
