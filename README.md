@@ -48,6 +48,7 @@ This project is a Django-backend automated food ordering system, where users can
 - **simplejwt** for json web token authentication
 - **PostgreSQL** for the database or **sqlite** for default database
 - **Celery** with **Redis** for background tasks
+- **Redis** for caching
 - **Daraja API** (M-Pesa) for payment integration
 - **python-decouple** for managing environment variables
 
