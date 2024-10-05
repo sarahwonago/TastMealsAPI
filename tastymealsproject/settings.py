@@ -140,3 +140,11 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME':timedelta(days=14),
     'REFRESH_TOKEN_LIFETIME':timedelta(days=14),
 }
+
+# DJOSER CONFIGURATIONS
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'users.serializers.CustomUserCreateSerializer',
+        'current_user': 'users.serializers.CustomUserCreateSerializer',
+    },
+}
