@@ -21,7 +21,7 @@ class CustomUser(AbstractUser):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=CUSTOMER)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="customer")
 
     def __str__(self) -> str:
         return self.username

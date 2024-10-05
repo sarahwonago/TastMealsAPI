@@ -39,6 +39,8 @@ INSTALLED_APPS = [
 
     # custom apps
     "account.apps.AccountConfig",
+    "customerend.apps.CustomerendConfig",
+    "cafeadminend.apps.CafeadminendConfig",
 ]
 
 AUTH_USER_MODEL = "account.CustomUser"
@@ -144,7 +146,7 @@ SIMPLE_JWT = {
 # DJOSER CONFIGURATIONS
 DJOSER = {
     'SERIALIZERS': {
-        'user_create': 'users.serializers.CustomUserCreateSerializer',
-        'current_user': 'users.serializers.CustomUserCreateSerializer',
+        'user_create': 'account.serializers.CustomUserCreateSerializer',
+        'current_user': 'account.serializers.CustomUserCreateSerializer',
     },
 }
