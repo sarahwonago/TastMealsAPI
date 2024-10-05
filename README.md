@@ -43,12 +43,13 @@ This project is a Django-backend automated food ordering system, where users can
 # Tech Stack
 
 - **Python** 3.x with **Django** 5.x
-- **restframewor** for API
+- **restframework** for API
 - **djoser** for user management
 - **simplejwt** for json web token authentication
-- **PostgreSQL** for the database
+- **PostgreSQL** for the database or **sqlite** for default database
 - **Celery** with **Redis** for background tasks
 - **Daraja API** (M-Pesa) for payment integration
+- **python-decouple** for managing environment variables
 
 
 
@@ -238,6 +239,9 @@ Response: if user is customer
 The frontend can check the role attribute and apply the appropriate redirection logic once the login is successfull.Admin users can be redirected to the admin dashboard.
 Customer users can be redirected to the customer area.
 
+5. **Swagger Docs** : for swagger documentatio - /api/docs/schema/swagger/
+
+6. **Redoc docs** : for redoc documentation - /api/docs/schema/redoc/
 
 # Testing
 Run the tests using pytest:

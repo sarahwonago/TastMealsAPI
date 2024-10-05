@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "djoser",
     # json web token authentication
     "rest_framework_simplejwt",
+    # api documentation
+    "drf_spectacular",
 
     # custom apps
     "account.apps.AccountConfig",
@@ -131,9 +133,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # REST FRAMEWORK CONFIGURATIONS
 REST_FRAMEWORK = {
+
     'DEFAULT_AUTHENTICATION_CLASSES':[
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
+
+    'DEFAULT_SCHEMA_CLASS':'drf_spectacular.openapi.AutoSchema',
+
 }
 
 
@@ -148,5 +154,18 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'account.serializers.CustomUserCreateSerializer',
         'current_user': 'account.serializers.CustomUserCreateSerializer',
+    },
+}
+
+# drf-spectacular settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'AutomatedFoodOrdering System API',
+    'DESCRIPTION': 'API documentation for the AutomatedFoodOrdering system backend',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'defaultModelRendering': 'model',
+        'defaultModelsExpandDepth': 2,
     },
 }
