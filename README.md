@@ -244,6 +244,160 @@ Customer users can be redirected to the customer area.
 
 6. **Redoc docs** : for redoc documentation - /api/docs/schema/redoc/
 
+7. **List Categories**
+This endpoint returns a list of all available categories. The list can be filtered, searched, and ordered. The cafeadmin must be authenticated to access this endpoint.
+
+Query Parameters:
+?name=<name>: Filters categories containing the provided name (case-insensitive).
+?search=<term>: Searches for the term within the name or description of categories.
+?ordering=<field>: Orders the categories by the specified field (default: created_at).
+
+Example Request: pass authorization headers
+
+```
+GET /api/cafeadmin/categories/?name=fruit&search=organic&ordering=-created_at
+
+```
+Example Response (if categories exist):
+```
+[
+  {
+    "id": "d234f1b4-bd8f-4b7a-a671-332c8ffbddee",
+    "name": "Fruits",
+    "description": "All kinds of fruits.",
+    "created_at": "2024-09-28T12:34:56Z",
+    "updated_at": "2024-09-28T12:34:56Z"
+  }
+]
+
+```
+
+Getting all categories:
+Example Request:
+
+```
+GET /api/cafeadmin/categories/
+
+```
+
+Response:
+```
+
+```
+8. **Create a new Category**: allows you to create a new category by providing a unique name and description.
+Example Request: with authorization headers
+
+```
+POST /api/cafeadmin/categories/
+
+```
+Request body:
+```
+{
+  "name": "Vegetables",
+  "description": "Fresh organic vegetables."
+}
+
+```
+Example Response:
+```
+{
+  "id": "e451f734-56a7-4d8b-bdda-234c879fae12",
+  "name": "Vegetables",
+  "description": "Fresh organic vegetables.",
+  "created_at": "2024-10-05T13:45:23Z",
+  "updated_at": "2024-10-05T13:45:23Z"
+}
+```
+
+9. **Retrieve, Update, Delete** a category.
+Endpoint: /api/cafeadmin/categories/<uuid>/
+Methods: GET, PUT, PATCH, DELETE
+
+GET: Retrieve Category by ID
+Fetches details for a specific category.
+
+Example Request:
+```
+GET /api/cafeadmin/categories/d234f1b4-bd8f-4b7a-a671-332c8ffbddee/
+
+```
+Example response:
+```
+{
+  "id": "d234f1b4-bd8f-4b7a-a671-332c8ffbddee",
+  "name": "Fruits",
+  "description": "All kinds of fruits.",
+  "created_at": "2024-09-28T12:34:56Z",
+  "updated_at": "2024-09-28T12:34:56Z"
+}
+
+```
+PUT/PATCH: Update a Category
+Allows you to update a category by providing new data. Either a full update (PUT) or partial update (PATCH) is supported.
+
+Request Body (for PUT):
+```
+{
+  "name": "Updated Category",
+  "description": "Updated description of the category."
+}
+
+```
+Response:
+```
+{
+  "id": "d234f1b4-bd8f-4b7a-a671-332c8ffbddee",
+  "name": "Updated Category",
+  "description": "Updated description of the category.",
+  "created_at": "2024-09-28T12:34:56Z",
+  "updated_at": "2024-10-05T14:15:23Z"
+}
+
+```
+
+DELETE: Remove a Category
+Deletes the specified category.
+
+Example Request:
+```
+DELETE /api/cafeadmin/categories/d234f1b4-bd8f-4b7a-a671-332c8ffbddee/
+
+```
+
+Response:
+```
+{
+  "message": "Category deleted successfully."
+}
+
+```
+**Filtering, Searching, and Ordering**
+**Filtering**
+You can filter the list of categories by name using the ?name= query parameter. This filter is case-insensitive and will match any category whose name contains the given value.
+
+Example:
+```
+GET /api/cafeadmin/categories/?name=fruit
+```
+**Searching**
+Search through the name and description of categories using the ?search= parameter. It will look for the search term in both fields.
+
+Example:
+```
+GET /api/cafeadmin/categories/?search=organic
+```
+
+**Ordering**
+You can order the categories by any field using the ?ordering= query parameter. By default, the results are ordered by created_at in ascending order. To order in descending order, prefix the field name with a minus sign (-).
+
+Example:
+```
+GET /api/cafeadmin/categories/?ordering=-created_at
+```
+
+10. 
+
 # Testing
 Run the tests using pytest:
 

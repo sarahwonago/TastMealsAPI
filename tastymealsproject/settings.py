@@ -174,6 +174,23 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+
+# Cache Configuration (using Redis)
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'food_api'
+    }
+}
+
+# Set the cache timeout in seconds
+CACHE_MIDDLEWARE_SECONDS = 300  # 5 minutes
+
+
 # LOGGING CONFIGURATIONS
 LOGGING = {
     'version': 1,
