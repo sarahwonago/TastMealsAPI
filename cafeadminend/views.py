@@ -107,7 +107,6 @@ class CategoryListCreateAPIView(APIView):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-
 class CategoryDetailAPIView(APIView):
     """
     API view to retrieve, update, or delete a category.

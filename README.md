@@ -282,7 +282,23 @@ GET /api/cafeadmin/categories/
 
 Response:
 ```
-
+[
+  {
+    "id": "ee3985a7-ec99-4f26-ae6c-18ae2e1642c0",
+    "name": "updated",
+    "description": "Fresh organic vegetables.",
+    "created_at": "2024-10-05T17:13:24.062408+03:00",
+    "updated_at": "2024-10-05T17:48:59.000216+03:00"
+  },
+  {
+    "id": "2a9848a9-2952-4cba-848a-4fa30945e137",
+    "name": "Breakfast",
+    "description": "First Meal of the day.",
+    "created_at": "2024-10-05T17:15:08.157435+03:00",
+    "updated_at": "2024-10-05T17:15:08.157473+03:00"
+  }
+  ...
+]
 ```
 8. **Create a new Category**: allows you to create a new category by providing a unique name and description.
 Example Request: with authorization headers
@@ -396,7 +412,34 @@ Example:
 GET /api/cafeadmin/categories/?ordering=-created_at
 ```
 
-10. 
+10. **Customer fetching Categories**: customers can fetch existing list of categories by sending  GET request to : /api/customer/categories/
+
+Response:
+```
+[
+  {
+    "id": "ee3985a7-ec99-4f26-ae6c-18ae2e1642c0",
+    "name": "updated",
+    "description": "Fresh organic vegetables.",
+    "created_at": "2024-10-05T17:13:24.062408+03:00",
+    "updated_at": "2024-10-05T17:48:59.000216+03:00"
+  },
+  {
+    "id": "2a9848a9-2952-4cba-848a-4fa30945e137",
+    "name": "Breakfast",
+    "description": "First Meal of the day.",
+    "created_at": "2024-10-05T17:15:08.157435+03:00",
+    "updated_at": "2024-10-05T17:15:08.157473+03:00"
+  }
+  ...
+]
+```
+
+To get detailed info about the category and the fooditems under the category, send a GET request to /api/customer/categories/{uuid}/
+
+Response:
+```
+```
 
 # Testing
 Run the tests using pytest:
