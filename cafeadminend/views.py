@@ -1,19 +1,18 @@
 import logging
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import generics, filters
+from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, filters
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 
 from account.permissions import IsAdmin
-from .models import Category, DiningTable
-from .serializers import CategorySerializer, DiningTableSerializer
+from .models import Category, DiningTable, FoodItem, SpecialOffer
+from .serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer
 
 
 # sets up logging for this module
@@ -32,7 +31,6 @@ class CafeadminHomeAPIView(APIView):
 
         return Response({"message":"Welcome home cafeadmin"}, status=status.HTTP_200_OK)
     
-
 
 class CategoryListCreateAPIView(APIView):
     """
@@ -104,8 +102,8 @@ class CategoryListCreateAPIView(APIView):
             logger.error(f"Failed to create category. Errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # Cache the list of categories for 5 minutes
-    @method_decorator(cache_page(60 * 5))
+    # Cache the list of categories for 1 minutes
+    @method_decorator(cache_page(60 * 1))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -181,8 +179,8 @@ class CategoryDetailAPIView(APIView):
         logger.warning(f"Category with ID {pk} deleted.")
         return Response({"message": "Category deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-    # Cache the category detail for 5 minutes
-    @method_decorator(cache_page(60 * 5))
+    # Cache the category detail for 1 minutes
+    @method_decorator(cache_page(60 * 1))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -243,6 +241,9 @@ class DiningTableListAPIView(APIView):
         serializer = DiningTableSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            # Clear the cache for the dinning table when a new one is added
+            cache.delete('dining_table_list')
+
             logger.info(f"Dining Table '{serializer.data['table_number']}' created successfully.")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         logger.error(f"Failed to create dining table: {serializer.errors}")
@@ -315,3 +316,153 @@ class DiningTableDetailAPIView(APIView):
         table.delete()
         logger.info(f"Dining Table '{table.table_number}' deleted successfully.")
         return Response({"message": "Dining table deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class FoodItemListView(APIView):
+    """
+    API view to handle requests for creating and retrieving FoodItems under a specific category.
+    Provides filtering, searching, and ordering functionalities with caching to reduce database load.
+
+    Methods:
+        - get: Retrieve a list of FoodItems under a given category with optional filters.
+        - post: Add a new FoodItem under a specified category.
+    """
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filterset_fields = ['category', 'is_available']
+    ordering_fields = ['price', 'created_at']
+    search_fields = ['name', 'description']
+
+    def get(self, request, category_id):
+        """
+        Retrieve a list of FoodItems under a specific category.
+
+        Uses caching to store the result for 15 minutes.
+        Provides filtering, searching, and ordering capabilities.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+
+        Returns:
+            Response: A JSON response with the list of food items.
+        """
+        cache_key = f'fooditems_category_{category_id}'
+        fooditems = cache.get(cache_key)
+
+        if not fooditems:
+            # If cache is empty, query the database and store the result in cache
+            fooditems = FoodItem.objects.filter(category_id=category_id)
+            cache.set(cache_key, fooditems, timeout=60 * 1)  # Cache for 1 minute
+
+        #fooditems = self.filter_queryset(fooditems)
+        serializer = FoodItemSerializer(fooditems, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, category_id):
+        """
+        Create a new FoodItem under a specific category.
+
+        On success, the cache for this category is cleared.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+
+        Returns:
+            Response: A JSON response with the newly created food item or validation errors.
+        """
+        serializer = FoodItemSerializer(data=request.data)
+        #category = get_object_or_404(Category, id=category_id)
+        if serializer.is_valid():
+            serializer.save(category_id=category_id)
+            # Clear the cache for the category when a new food item is added
+            cache.delete(f'fooditems_category_{category_id}')
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FoodItemDetailView(APIView):
+    """
+    API view to handle retrieving, updating, and deleting a specific FoodItem.
+
+    Methods:
+        - get: Retrieve details of a specific FoodItem.
+        - put: Update all fields of a specific FoodItem.
+        - patch: Partially update fields of a specific FoodItem.
+        - delete: Delete a specific FoodItem.
+    """
+
+    def get(self, request, category_id, fooditem_id):
+        """
+        Retrieve details of a specific FoodItem.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+            fooditem_id (UUID): The UUID of the food item.
+
+        Returns:
+            Response: A JSON response with the food item details or 404 if not found.
+        """
+        fooditem = FoodItem.objects.filter(id=fooditem_id, category_id=category_id).first()
+        if fooditem:
+            serializer = FoodItemSerializer(fooditem)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, category_id, fooditem_id):
+        """
+        Update all fields of a specific FoodItem.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+            fooditem_id (UUID): The UUID of the food item.
+
+        Returns:
+            Response: A JSON response with the updated food item details or validation errors.
+        """
+        fooditem = FoodItem.objects.filter(id=fooditem_id, category_id=category_id).first()
+        if fooditem:
+            serializer = FoodItemSerializer(fooditem, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                cache.delete(f'fooditems_category_{category_id}')
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, category_id, fooditem_id):
+        """
+        Partially update fields of a specific FoodItem.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+            fooditem_id (UUID): The UUID of the food item.
+
+        Returns:
+            Response: A JSON response with the updated food item details or validation errors.
+        """
+        fooditem = FoodItem.objects.filter(id=fooditem_id, category_id=category_id).first()
+        if fooditem:
+            serializer = FoodItemSerializer(fooditem, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                cache.delete(f'fooditems_category_{category_id}')
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, category_id, fooditem_id):
+        """
+        Delete a specific FoodItem.
+
+        Args:
+            category_id (UUID): The UUID of the category.
+            fooditem_id (UUID): The UUID of the food item.
+
+        Returns:
+            Response: A status 204 response on successful deletion or 404 if not found.
+        """
+        fooditem = FoodItem.objects.filter(id=fooditem_id, category_id=category_id).first()
+        if fooditem:
+            fooditem.delete()
+            cache.delete(f'fooditems_category_{category_id}')
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
