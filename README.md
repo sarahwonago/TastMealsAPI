@@ -435,10 +435,35 @@ Response:
 ]
 ```
 
-To get detailed info about the category and the fooditems under the category, send a GET request to /api/customer/categories/{uuid}/
+To get detailed info about the category and the fooditems under the category, send a GET request to /api/customer/categories/{category_id}/fooditems/
 
 Response:
 ```
+[
+  {
+    "id": "c1e28951-09bc-470d-a49f-f5d45baf043b",
+    "category": "Breakfast",
+    "name": "Eggs",
+    "price": "40.00",
+    "image": "/media/food_images/default.jpg",
+    "description": "Eggs for breakfast",
+    "created_at": "2024-10-07T13:42:44.297183+03:00",
+    "updated_at": "2024-10-07T14:08:32.835961+03:00",
+    "is_available": false
+  }
+  {
+    "id": "c1e28951-09bc-470d-a49f-f5d45baf043b",
+    "category": "Vegetables",
+    "name": "Salad",
+    "price": "40.00",
+    "image": "/media/food_images/default.jpg",
+    "description": "Salad",
+    "created_at": "2024-10-07T13:42:44.297183+03:00",
+    "updated_at": "2024-10-07T14:08:32.835961+03:00",
+    "is_available": false
+  }
+  ...
+]
 ```
 
 11. **Dinning tables**: endpoints for cafeadmin to manage dinning tables

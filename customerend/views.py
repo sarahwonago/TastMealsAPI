@@ -8,8 +8,8 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 
-from cafeadminend.models import Category, DiningTable
-from cafeadminend.serializers import CategorySerializer, DiningTableSerializer
+from cafeadminend.models import Category, DiningTable, FoodItem
+from cafeadminend.serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer
 
 from account.permissions import IsCustomer
 
@@ -85,11 +85,9 @@ class CategoryListCreateAPIView(APIView):
 
 class CategoryDetailAPIView(APIView):
     """
-    API view to retrieve, update, or delete a category.
+    API view to retrieve a category.
 
     - GET: Retrieves details of a category by ID.
-    - PUT/PATCH: Updates an existing category.
-    - DELETE: Deletes a category.
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
@@ -108,17 +106,19 @@ class CategoryDetailAPIView(APIView):
             logger.error(f"Category with ID {pk} not found.")
             return Response({"error": "Category not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        serializer = CategorySerializer(category)
+        fooditems = FoodItem.objects.filter(category=category)
+        #serializer = CategorySerializer(category)
+        serializer = FoodItemSerializer(fooditems, many=True)
         logger.debug(f"Fetched details for category with ID {pk}")
 
         # modify to include fooditems under this category
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
     # Cache the category detail for 5 minutes
     @method_decorator(cache_page(60 * 5))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+   
 
 
 class DiningTableListAPIView(APIView):

@@ -31,7 +31,7 @@ class FoodItemSerializer(serializers.ModelSerializer):
     Serializer for the FoodItem model.
     """
 
-    #category = serializers.CharField(source='category.name', read_only=True)
+    category = serializers.CharField(source='category.name', read_only=True)
 
     class Meta:
         model = FoodItem

@@ -9,7 +9,7 @@ from .views import (
 urlpatterns = [
     path("", CustomerHomeAPIView.as_view(), name="customer-home"),
     path("categories/", CategoryListCreateAPIView.as_view(), name="customer-categories-list-create"),
-    path("categories/<uuid:pk>/", CategoryDetailAPIView.as_view(), name="customer-category-detail"),
+    path("categories/<uuid:pk>/fooditems/", CategoryDetailAPIView.as_view(), name="customer-category-detail"),
     path("dinning-tables/", DiningTableListAPIView.as_view(), name="customer-dinning"),
  
 ]
