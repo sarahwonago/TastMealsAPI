@@ -12,7 +12,7 @@ from rest_framework.exceptions import ValidationError
 
 from account.permissions import IsAdmin
 from .models import Category, DiningTable, FoodItem, SpecialOffer
-from .serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer
+from .serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer
 
 
 # sets up logging for this module
@@ -466,3 +466,4 @@ class FoodItemDetailView(APIView):
             cache.delete(f'fooditems_category_{category_id}')
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
