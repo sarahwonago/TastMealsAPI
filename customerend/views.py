@@ -5,10 +5,11 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 
-from cafeadminend.models import Category
-from cafeadminend.serializers import CategorySerializer
+from cafeadminend.models import Category, DiningTable
+from cafeadminend.serializers import CategorySerializer, DiningTableSerializer
 
 from account.permissions import IsCustomer
 
@@ -118,3 +119,51 @@ class CategoryDetailAPIView(APIView):
     @method_decorator(cache_page(60 * 5))
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
+
+
+class DiningTableListAPIView(APIView):
+    """
+    API view to retrieve dining tables.
+    
+    - GET: List all dining tables (with filtering, searching, and ordering).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        List all dining tables with filtering, searching, and ordering.
+        Cached for 5 minutes.
+        """
+        cache_key = "dining_table_list"
+        cached_data = cache.get(cache_key)
+
+        if cached_data:
+            logger.debug("Serving dining table list from cache.")
+            return Response(cached_data)
+
+        tables = DiningTable.objects.all()
+
+        # Filter by table_number
+        table_number = request.query_params.get('table_number', None)
+        if table_number:
+            tables = tables.filter(table_number=table_number)
+
+        # Search
+        search = request.query_params.get('search', None)
+        if search:
+            tables = tables.filter(table_number__icontains=search)
+
+        # Ordering
+        ordering = request.query_params.get('ordering', 'created_at')
+        if ordering.startswith('-'):
+            tables = tables.order_by(ordering)
+        else:
+            tables = tables.order_by(ordering)
+
+        
+        serializer = DiningTableSerializer(tables, many=True)
+
+        cache.set(cache_key, serializer.data, timeout=300)  # Cache for 5 minutes
+        logger.debug("Caching dining table list for 5 minutes.")
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

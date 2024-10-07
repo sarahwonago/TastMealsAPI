@@ -441,6 +441,19 @@ Response:
 ```
 ```
 
+11. **Dinning tables**: endpoints for cafeadmin to manage dinning tables
+GET /api/cafeadmin/dinning-tables/
+POST /api/cafeadmin/dinning-tables/
+PATCH /api/cafeadmin/dinning-tables/{id}/
+GET /api/cafeadmin/dinning-tables/{id}/
+PUT /api/cafeadmin/dinning-tables/{id}/
+DELETE /api/cafeadmin/dinning-tables/{id}/
+
+12. **Dinning tables**: endpoints for customer to access all dinning tables
+GET /api/customer/dinning-tables/
+
+13. 
+
 # Testing
 Run the tests using pytest:
 

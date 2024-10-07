@@ -199,7 +199,7 @@ class DiningTableListAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         """
-        List all dining tables with pagination, filtering, searching, and ordering.
+        List all dining tables with, filtering, searching, and ordering.
         Cached for 5 minutes.
         """
         cache_key = "dining_table_list"
