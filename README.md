@@ -467,6 +467,7 @@ Response:
 ```
 
 11. **Dinning tables**: endpoints for cafeadmin to manage dinning tables
+```
 GET /api/cafeadmin/dinning-tables/
 POST /api/cafeadmin/dinning-tables/
 
@@ -474,12 +475,16 @@ PATCH /api/cafeadmin/dinning-tables/{id}/
 GET /api/cafeadmin/dinning-tables/{id}/
 PUT /api/cafeadmin/dinning-tables/{id}/
 DELETE /api/cafeadmin/dinning-tables/{id}/
+```
 
 12. **Dinning tables**: endpoints for customer to access all dinning tables
+```
 GET /api/customer/dinning-tables/
+```
 
 13. **FoodItems**: endpoints for admin to manage fooditems under a specific category
 
+```
 GET /api/cafeadmin/categories/{category_id}/fooditems/
 POST /api/cafeadmin/categories/{category_id}/fooditems/
 
@@ -488,8 +493,11 @@ PUT /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 PATCH /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 DELETE /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 
+```
+
 14. **SpecialOffers**: endpoints for admin to manage specialoffers
 
+```
 GET /api/cafeadmin/specialoffers/
 POST /api/cafeadmin/specialoffers/{fooditem_id}/
 
@@ -498,8 +506,12 @@ PUT /api/cafeadmin/specialoffers/{offer_id}/detail/
 PATCH /api/cafeadmin/specialoffers/{offer_id}/detail/
 DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
 
+```
+
 **Customers accessing specialoffers**- send a GET request to:
+```
 GET /api/customer/specialoffers/
+```
 
 # Testing
 Run the tests using pytest:
