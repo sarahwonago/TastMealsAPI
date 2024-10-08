@@ -385,3 +385,62 @@ class CancelOrderView(APIView):
                 {"detail": "Order not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+import requests
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .models import Order, Payment, DiningTable
+from django.utils import timezone
+
+class PaymentView(APIView):
+    """
+    API view to handle payments using Daraja API (M-Pesa).
+
+    Attributes:
+        permission_classes (list): Only authenticated users can access this view.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        """
+        Post method to initiate payment for an order.
+        """
+        user = request.user
+        try:
+            order = Order.objects.get(id=order_id, user=user)
+
+            # Check if order is already paid
+            if order.is_paid:
+                return Response({"detail": "Order is already paid."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Payment amount will be the total price of the order
+            amount = order.total_price
+
+            # Get the dining table from request body
+            dining_table_id = request.data.get('dining_table')
+            if dining_table_id:
+                try:
+                    dining_table = DiningTable.objects.get(id=dining_table_id)
+                except DiningTable.DoesNotExist:
+                    return Response({"detail": "Dining table not found."}, status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response({"detail": "Dining table ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Daraja API integration logic here
+            
+
+            # Update order with dining table and mark as paid
+            order.dining_table = dining_table
+            order.is_paid = True
+            order.save()
+                
+
+            return Response({"detail": "Payment successful. Order updated."}, status=status.HTTP_200_OK)
+
+        except Order.DoesNotExist:
+            return Response({"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    

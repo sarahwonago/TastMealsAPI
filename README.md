@@ -529,6 +529,10 @@ POST api/customer/orders/{order_id}/cancel/
 
 ```
 
+16. **Payment**: payment for orders placed
+```
+POST api/customer/order/{order_id}/payment/
+```
 
 # Testing
 Run the tests using pytest:
