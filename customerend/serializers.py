@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import CartItem
+from .models import CartItem, Order
 
 class CartItemSerializer(serializers.ModelSerializer):
     """
@@ -26,3 +26,21 @@ class CartItemSerializer(serializers.ModelSerializer):
         Gets the fooditem name
         """
         return obj.fooditem.name
+
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Order model.
+    """
+    order_items = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=CartItem.objects.all()
+    )
+    
+    class Meta:
+        model = Order
+        fields = ['id', 'user', 'order_items', 'total_price', 'is_paid', 'estimated_time', 'status', 'dining_table', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'order_items', 'total_price', 'is_paid', 'estimated_time', 'status', 'dining_table', 'created_at', 'updated_at']
+
+   

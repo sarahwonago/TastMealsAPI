@@ -152,4 +152,3 @@ class Order(models.Model):
         Validates if the user can review an order the same day they paid for it.
         """
         return self.updated_at.date() == timezone.now().date()
-    

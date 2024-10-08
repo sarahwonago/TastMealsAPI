@@ -12,8 +12,8 @@ from rest_framework.exceptions import ValidationError
 from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer
 from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
 
-from .serializers import CartItemSerializer
-from .models import CartItem, Cart
+from .serializers import CartItemSerializer, OrderSerializer
+from .models import CartItem, Cart, Order
 
 from account.permissions import IsCustomer
 
@@ -281,3 +281,46 @@ class CartItemDetailAPIView(APIView):
         cart_item.delete()
         logger.info(f"Deleted {cart_item.fooditem.name} from cart.")
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PlaceOrderView(APIView):
+    """
+    Handles creating an order.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Endpoint for placing an order from the user's cart.
+        """
+        user = request.user
+        # fetching users cartitems
+        cart = user.cart
+        cart_items = cart.cartitems.all()
+        
+        if not cart_items.exists():
+            return Response({"message":"The cart is empty, no items to place in the order."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate total price from the users cart
+        total_price = cart.total_price
+
+        # Create the order
+        order = Order.objects.create(
+            user=user,
+            total_price=total_price
+        )
+        
+        # Add cart items to the order
+        order.order_items.set(cart_items)
+        order.save()
+        
+        # Clear the user's cart after the order is placed
+        cart.cartitems.all().delete()
+        cart.save()
+
+        return Response({
+            "message": "Order placed successfully.",
+            "order_id": order.id
+        }, status=status.HTTP_201_CREATED)
+        
+        
