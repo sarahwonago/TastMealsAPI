@@ -513,11 +513,14 @@ DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
 GET /api/customer/specialoffers/
 ```
 
-15. **Cart Management**- customers adding items to cart, viewing cart,
+15. **Cart Management**- customers adding items to cart, viewing cart, and updating cart(by deleting cart items or by updating cartitem quantity)
 ```
 POST /api/customer/add-to-cart/{fooditem_id}/
 
 GET api/customer/my-cart/
+
+PATCH api/customer/my-cart/{cartitem_id}/
+DELETE api/customer/my-cart/{cartitem_id}/
 
 ```
 

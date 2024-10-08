@@ -246,7 +246,6 @@ class CartAPIView(APIView):
         cart_items = CartItem.objects.filter(cart=cart)
 
         serializer = CartItemSerializer(cart_items, many=True)
-        total_cart_price = sum(item.total_price for item in cart_items)
 
         return Response({
             "cart_items": serializer.data,
