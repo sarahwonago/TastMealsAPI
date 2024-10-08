@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     CustomerHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
-    DiningTableListAPIView, SpecialOfferListAPIView
+    DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView
 )
 
 
@@ -18,6 +18,9 @@ urlpatterns = [
     path("dinning-tables/", DiningTableListAPIView.as_view(), name="customer-dinning"),
 
     # specialoffer endpoint
-    path("specialoffers/", SpecialOfferListAPIView.as_view(), name="customer-specialoffers-list")
+    path("specialoffers/", SpecialOfferListAPIView.as_view(), name="customer-specialoffers-list"),
+
+    # Adding items to cart
+    path("add-to-cart/<uuid:fooditem_id>/", AddItemToCartAPIView.as_view(), name="customer-add-to-cart")
  
 ]

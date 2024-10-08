@@ -1,4 +1,5 @@
 import logging
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -10,6 +11,9 @@ from rest_framework.exceptions import ValidationError
 
 from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer
 from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
+
+from .serializers import CartItemSerializer
+from .models import CartItem, Cart
 
 from account.permissions import IsCustomer
 
@@ -182,3 +186,98 @@ class SpecialOfferListAPIView(APIView):
         special_offers = SpecialOffer.objects.all()
         serializer = SpecialOfferSerializer(special_offers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class AddItemToCartAPIView(APIView):
+    """
+    API view to add an item to the cart.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, fooditem_id, format=None):
+        """
+        Add an item to the cart for the authenticated user.
+        """
+        user = request.user
+        # gets users cart
+        cart = Cart.objects.get(user=user)
+
+        fooditem = get_object_or_404(FoodItem, id=fooditem_id)
+
+        # checks if fooditem is already added to cart
+        try:
+            cart_item =CartItem.objects.get(cart=cart, fooditem=fooditem)
+            if cart_item:
+                return Response({"message":"Item already added to cart."}, status=status.HTTP_400_BAD_REQUEST)
+        except CartItem.DoesNotExist:
+            pass
+        quantity =request.data.get("quantity", 1)
+        data = {
+            "cart": cart.id,
+            "fooditem": fooditem.id,
+            "quantity": quantity
+        }
+        serializer = CartItemSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save(cart=cart, fooditem=fooditem)
+            logger.info(f"Added {fooditem.name} to cart for user {user.username}.")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error(f"Failed to add {fooditem.name} to cart: {serializer.errors}.")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+class CartAPIView(APIView):
+    """
+    API view to retrieve all items in the cart.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, format=None):
+        """
+        Retrieve all items in the authenticated user's cart.
+        """
+        user = request.user
+        cart = get_object_or_404(Cart, user=user)
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        serializer = CartItemSerializer(cart_items, many=True)
+        total_cart_price = sum(item.total_price for item in cart_items)
+
+        return Response({
+            "cart_items": serializer.data,
+            "total_cart_price": total_cart_price
+        }, status=status.HTTP_200_OK)
+
+
+class CartItemDetailAPIView(APIView):
+    """
+    API view to update or delete an individual cart item.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def patch(self, request, cartitem_id, format=None):
+        """
+        Update the quantity of a cart item.
+        """
+        cart_item = get_object_or_404(CartItem, id=cartitem_id, cart__user=request.user)
+
+        serializer = CartItemSerializer(cart_item, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"Updated quantity of {cart_item.fooditem.name} to {cart_item.quantity}.")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.error(f"Failed to update cart item: {serializer.errors}.")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, cartitem_id, format=None):
+        """
+        Remove an item from the cart.
+        """
+        cart_item = get_object_or_404(CartItem, id=cartitem_id, cart__user=request.user)
+        cart_item.delete()
+        logger.info(f"Deleted {cart_item.fooditem.name} from cart.")
+        return Response(status=status.HTTP_204_NO_CONTENT)
