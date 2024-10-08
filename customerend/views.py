@@ -323,4 +323,40 @@ class PlaceOrderView(APIView):
             "order_id": order.id
         }, status=status.HTTP_201_CREATED)
         
+
+class OrderListView(APIView):
+    """
+    API view to retrieve a list of orders for the authenticated user,
+    with filtering, ordering, and searching capabilities.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request):
+        """
+        Retrieve a list of orders for the authenticated user.
+        Allows filtering, searching, and ordering.
+        """
+        # Fetch the orders for the authenticated user
+        orders = Order.objects.filter(user=request.user)
+
+        # Filtering
+        status_param = request.query_params.get('status', None)
+
+        if status_param:
+            orders = orders.filter(status=status_param)
+
+        # Searching
+        search_param = request.query_params.get('search', None)
+        if search_param:
+            orders = orders.filter(status__icontains=search_param)
+
+        # Ordering
+        ordering_param = request.query_params.get('ordering', '-updated_at')
+        orders = orders.order_by(ordering_param)
+
+        # Serialize the orders
+        serializer = OrderSerializer(orders, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
         

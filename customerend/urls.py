@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (
     CustomerHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
     DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
-    CartItemDetailAPIView, PlaceOrderView
+    CartItemDetailAPIView, PlaceOrderView, OrderListView
 )
 
 
@@ -28,7 +28,9 @@ urlpatterns = [
     # Update/Delete specific cart item (using cartitem_id in the URL)
     path('my-cart/<uuid:cartitem_id>/', CartItemDetailAPIView.as_view(), name='customer-cart-item-detail'),
 
-    # placing an order endpoint
+    # placing an order endpoint, listing all orders
     path('my-cart/place-order/', PlaceOrderView.as_view(), name='customer-place-order'),
+    path('orders/', OrderListView.as_view(), name='customer-orders'),
+
  
 ]
