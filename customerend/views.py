@@ -213,6 +213,7 @@ class AddItemToCartAPIView(APIView):
                 return Response({"message":"Item already added to cart."}, status=status.HTTP_400_BAD_REQUEST)
         except CartItem.DoesNotExist:
             pass
+
         quantity =request.data.get("quantity", 1)
         data = {
             "cart": cart.id,
@@ -241,7 +242,7 @@ class CartAPIView(APIView):
         Retrieve all items in the authenticated user's cart.
         """
         user = request.user
-        cart = get_object_or_404(Cart, user=user)
+        cart = Cart.objects.get(user=user)
         cart_items = CartItem.objects.filter(cart=cart)
 
         serializer = CartItemSerializer(cart_items, many=True)
@@ -249,7 +250,7 @@ class CartAPIView(APIView):
 
         return Response({
             "cart_items": serializer.data,
-            "total_cart_price": total_cart_price
+            "total_cart_price": cart.total_price
         }, status=status.HTTP_200_OK)
 
 

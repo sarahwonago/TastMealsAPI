@@ -53,6 +53,7 @@ class CartItem(models.Model):
         verbose_name_plural = "Cart Items"
         unique_together = ('cart', 'fooditem')
 
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cart = models.ForeignKey(
         Cart,
@@ -82,13 +83,13 @@ class CartItem(models.Model):
         price = self.fooditem.price
 
         # checks if the fooditem has a specialoffer
-        offer= SpecialOffer.objects.filter(fooditem=self.fooditem)
-
-      
-        if offer:
+        try:
+            offer= SpecialOffer.objects.get(fooditem=self.fooditem)
             discount = (offer.discount_percentage / 100) * price
             price -= discount
-
+        except SpecialOffer.DoesNotExist:
+            pass
+      
         return price 
     
     @property

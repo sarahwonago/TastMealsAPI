@@ -513,6 +513,14 @@ DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
 GET /api/customer/specialoffers/
 ```
 
+15. **Cart Management**- customers adding items to cart, viewing cart,
+```
+POST /api/customer/add-to-cart/{fooditem_id}/
+
+GET api/customer/my-cart/
+
+```
+
 # Testing
 Run the tests using pytest:
 
