@@ -24,17 +24,12 @@ class Cart(models.Model):
         related_name="cart",
         on_delete=models.CASCADE
     )
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
 
     def __str__(self):
         return f"{self.user.username}'s cart."
     
-    @property
-    def total_price(self):
-        """
-        Dynamically Calculates the total price based on the cartitems.
-        """
-        return sum(item.total_price for item in self.cartitems.all())
         
 class CartItem(models.Model):
     """
