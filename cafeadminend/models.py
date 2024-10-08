@@ -135,6 +135,13 @@ class SpecialOffer(models.Model):
         """
         now = timezone.now()
         return self.start_date <= now <= self.end_date
+    
+    @property
+    def price(self):
+        """
+        Actual price for the fooditem on offer
+        """
+        return self.fooditem.price
 
     def __str__(self):
         return f"{self.name} - {self.discount_percentage}% Off for {self.fooditem.name}"

@@ -490,13 +490,16 @@ DELETE /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 
 14. **SpecialOffers**: endpoints for admin to manage specialoffers
 
-GET /api/cafeadmin/categories/specialoffers/
+GET /api/cafeadmin/specialoffers/
 POST /api/cafeadmin/specialoffers/{fooditem_id}/
 
 GET /api/cafeadmin/specialoffers/{offer_id}/detail/
 PUT /api/cafeadmin/specialoffers/{offer_id}/detail/
 PATCH /api/cafeadmin/specialoffers/{offer_id}/detail/
 DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
+
+**Customers accessing specialoffers**- send a GET request to:
+GET /api/customer/specialoffers/
 
 # Testing
 Run the tests using pytest:

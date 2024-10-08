@@ -479,7 +479,7 @@ class SpecialOfferListAPIView(APIView):
 
     def get(self, request, format=None):
         """
-        Retrieve the SpecialOffer for a given food item, if it is active.
+        Retrieve the SpecialOffer if it is active.
         """
     
         special_offers = SpecialOffer.objects.all()

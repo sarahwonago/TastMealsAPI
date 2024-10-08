@@ -8,8 +8,8 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from rest_framework.exceptions import ValidationError
 
-from cafeadminend.models import Category, DiningTable, FoodItem
-from cafeadminend.serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer
+from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer
+from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
 
 from account.permissions import IsCustomer
 
@@ -120,7 +120,6 @@ class CategoryDetailAPIView(APIView):
         return super().dispatch(*args, **kwargs)
    
 
-
 class DiningTableListAPIView(APIView):
     """
     API view to retrieve dining tables.
@@ -166,4 +165,20 @@ class DiningTableListAPIView(APIView):
         cache.set(cache_key, serializer.data, timeout=300)  # Cache for 5 minutes
         logger.debug("Caching dining table list for 5 minutes.")
 
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class SpecialOfferListAPIView(APIView):
+    """
+    API view to list all SpecialOffers.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, format=None):
+        """
+        Retrieve all the SpecialOffer  if it is active.
+        """
+    
+        special_offers = SpecialOffer.objects.all()
+        serializer = SpecialOfferSerializer(special_offers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -77,7 +77,7 @@ class SpecialOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SpecialOffer
-        fields = ['id', 'name', 'fooditem_name', 'discount_percentage', 'start_date', 'end_date', 'description', 'is_active']
+        fields = ['id', 'name', 'fooditem_name', 'discount_percentage', 'start_date', 'end_date', 'description', 'is_active', 'price']
         
 
     def get_fooditem_name(self, obj):
