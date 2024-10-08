@@ -488,6 +488,16 @@ PUT /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 PATCH /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 DELETE /api/cafeadmin/categories/{category_id}/fooditems/{fooditem_id}/
 
+14. **SpecialOffers**: endpoints for admin to manage specialoffers
+
+GET /api/cafeadmin/categories/specialoffers/
+POST /api/cafeadmin/specialoffers/{fooditem_id}/
+
+GET /api/cafeadmin/specialoffers/{offer_id}/detail/
+PUT /api/cafeadmin/specialoffers/{offer_id}/detail/
+PATCH /api/cafeadmin/specialoffers/{offer_id}/detail/
+DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
+
 # Testing
 Run the tests using pytest:
 

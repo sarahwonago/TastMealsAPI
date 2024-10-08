@@ -331,6 +331,7 @@ class FoodItemListView(APIView):
     filterset_fields = ['category', 'is_available']
     ordering_fields = ['price', 'created_at']
     search_fields = ['name', 'description']
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, category_id):
         """
@@ -389,6 +390,7 @@ class FoodItemDetailView(APIView):
         - patch: Partially update fields of a specific FoodItem.
         - delete: Delete a specific FoodItem.
     """
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request, category_id, fooditem_id):
         """
@@ -467,3 +469,103 @@ class FoodItemDetailView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
+
+class SpecialOfferListAPIView(APIView):
+    """
+    API view to list all SpecialOffers.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request, format=None):
+        """
+        Retrieve the SpecialOffer for a given food item, if it is active.
+        """
+    
+        special_offers = SpecialOffer.objects.all()
+        serializer = SpecialOfferSerializer(special_offers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class SpecialOfferCreateAPIView(APIView):
+    """
+    API view to handle creating a new SpecialOffer.
+    """
+       
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, fooditem_id, format=None):
+        """
+        Create a new SpecialOffer for a given food item.
+        """
+        try:
+            fooditem = FoodItem.objects.get(id=fooditem_id)
+        except FoodItem.DoesNotExist:
+            logger.warning("Active FoodItem with id %s not found.", fooditem_id)
+            return Response({"detail": "Active FoodItem not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        offer = get_object_or_404(SpecialOffer, fooditem=fooditem)
+
+        if offer:
+            return Response({"message":"Specialoffer with this fooditem already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = SpecialOfferSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(fooditem=fooditem)
+            logger.info("SpecialOffer created successfully for FoodItem id %s.", fooditem_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error("Failed to create SpecialOffer: %s", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SpecialOfferDetailAPIView(APIView):
+    """
+    API view to handle operations on a single SpecialOffer.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_object(self, offer_id):
+        """
+        Retrieve the SpecialOffer object by its associated id.
+        """
+        try:
+            return SpecialOffer.objects.get(id=offer_id)
+        except (SpecialOffer.DoesNotExist):
+            logger.warning("No active SpecialOffer found for this id %s.", offer_id)
+            return None
+
+    def get(self, request, offer_id, format=None):
+        """
+        Retrieve a SpecialOffer by its associated food item.
+        """
+        special_offer = self.get_object(offer_id)
+        if special_offer:
+            serializer = SpecialOfferSerializer(special_offer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"detail": "SpecialOffer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, offer_id, format=None):
+        """
+        Update a SpecialOffer by its associated food item.
+        """
+        special_offer = self.get_object(offer_id)
+        if special_offer:
+            serializer = SpecialOfferSerializer(special_offer, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("SpecialOffer updated successfully for FoodItem id %s.", offer_id)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            logger.error("Failed to update SpecialOffer: %s", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "SpecialOffer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, offer_id, format=None):
+        """
+        Delete a SpecialOffer by its associated food item.
+        """
+        special_offer = self.get_object(offer_id)
+        if special_offer:
+            special_offer.delete()
+            logger.info("SpecialOffer deleted successfully for FoodItem id %s.", offer_id)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"detail": "SpecialOffer not found."}, status=status.HTTP_404_NOT_FOUND)

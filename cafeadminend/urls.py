@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (CafeadminHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
-                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,
+                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView
                    )
 
 
@@ -21,6 +21,10 @@ urlpatterns = [
     path("dinning-tables/", DiningTableListAPIView.as_view(), name="dinning-list-create"),
     path("dinning-tables/<uuid:pk>/", DiningTableDetailAPIView.as_view(), name="dinning-detail"),
 
- 
+    # specialoffer endpoints
+    path("specialoffers/", SpecialOfferListAPIView.as_view(), name='specialoffer-list'),
+    path('specialoffers/<uuid:fooditem_id>/', SpecialOfferCreateAPIView.as_view(), name='specialoffer-create'),
+    path('specialoffers/<uuid:offer_id>/detail/', SpecialOfferDetailAPIView.as_view(), name='specialoffer-detail'),
+
    
 ]
