@@ -513,7 +513,7 @@ DELETE /api/cafeadmin/specialoffers/{offer_id}/detail/
 GET /api/customer/specialoffers/
 ```
 
-15. **Cart and Order Management**- customers adding items to cart, viewing cart, and updating cart(by deleting cart items or by updating cartitem quantity), placing an order, viewing all orders
+15. **Cart and Order Management**- customers adding items to cart, viewing cart, and updating cart(by deleting cart items or by updating cartitem quantity), placing an order, viewing all orders, cancel unpaid orders
 ```
 POST /api/customer/add-to-cart/{fooditem_id}/
 
@@ -524,6 +524,8 @@ DELETE api/customer/my-cart/{cartitem_id}/
 
 POST api/customer/my-cart/place-order/
 GET api/customer/orders/
+
+POST api/customer/orders/{order_id}/cancel/
 
 ```
 

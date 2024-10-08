@@ -360,3 +360,28 @@ class OrderListView(APIView):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
         
+
+class CancelOrderView(APIView):
+    """
+    API view to cancel an existing unpaid order.
+    """
+
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request, order_id):
+        """
+        Cancel an unpaid order by ID for the authenticated user.
+        """
+        try:
+            # Fetch the order
+            order = Order.objects.get(id=order_id, user=request.user, is_paid=False)
+
+            # delete the order
+            order.delete()
+            return Response({"detail": "Order cancelled successfully."}, status=status.HTTP_200_OK)
+
+        except Order.DoesNotExist:
+            return Response(
+                {"detail": "Order not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
