@@ -543,7 +543,11 @@ POST api/customer/orders/{order_id}/review/
 PATCH api/customer/reviews/{order_id}/update/
 DELETE api/customer/reviews/{order_id}/delete/
 ```
+Admin can also view customer reviews
 
+```
+GET /api/cafeadmin/customer-reviews/
+```
 # Testing
 Run the tests using pytest:
 

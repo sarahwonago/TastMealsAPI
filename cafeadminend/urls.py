@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (CafeadminHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
-                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView
+                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView, ReviewsAPIView
                    )
 
 
@@ -26,5 +26,6 @@ urlpatterns = [
     path('specialoffers/<uuid:fooditem_id>/', SpecialOfferCreateAPIView.as_view(), name='specialoffer-create'),
     path('specialoffers/<uuid:offer_id>/detail/', SpecialOfferDetailAPIView.as_view(), name='specialoffer-detail'),
 
-   
+    # admin viewing reviews made by customers
+    path("customer-reviews/", ReviewsAPIView.as_view(), name="reviews"),
 ]

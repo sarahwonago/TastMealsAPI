@@ -12,7 +12,10 @@ from rest_framework.exceptions import ValidationError
 
 from account.permissions import IsAdmin
 from .models import Category, DiningTable, FoodItem, SpecialOffer
-from .serializers import CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer
+from .serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
+
+from customerend.models import Review
+from customerend.serializers import ReviewSerializer
 
 
 # sets up logging for this module
@@ -569,3 +572,15 @@ class SpecialOfferDetailAPIView(APIView):
             logger.info("SpecialOffer deleted successfully for FoodItem id %s.", offer_id)
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "SpecialOffer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ReviewsAPIView(APIView):
+    """
+    API view to list all reviews made by customers.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        reviews = Review.objects.all()
+        serializer = ReviewSerializer(reviews, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
