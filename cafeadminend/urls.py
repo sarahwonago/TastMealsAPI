@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (CafeadminHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
-                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView, ReviewsAPIView
+                    DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView
                    )
 
 
@@ -28,4 +28,14 @@ urlpatterns = [
 
     # admin viewing reviews made by customers
     path("customer-reviews/", ReviewsAPIView.as_view(), name="reviews"),
+
+    # List notifications, filtering, searching, ordering
+    path('notifications/', NotificationListView.as_view(), name='notifications-list'),
+
+    # Mark as read, bulk delete
+    path('notifications/mark-as-read/', BulkMarkAsReadView.as_view(), name='bulk-mark-as-read'),
+    path('notifications/delete/', BulkDeleteNotificationsView.as_view(), name='bulk-delete-notifications'),
+
+    # View a single notification and mark it as read
+    path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
 ]
