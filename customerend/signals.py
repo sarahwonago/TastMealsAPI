@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 from .models import CartItem, Cart, Order
@@ -31,14 +31,44 @@ def update_cart_total_on_delete(sender, instance, **kwargs):
 
 
 
-@receiver(post_save, sender=Order)
-def notify_user_on_order_update(sender, instance, created, **kwargs):
+@receiver(pre_save, sender=Order)
+def order_status_change_notification(sender, instance, **kwargs):
     """
-    Signal that triggers when an Order is updated. 
-    If the order status is updated to 'COMPLETE', notify the user.
+    Send a notification to the customer when the order status changes to 'COMPLETE'.
     """
-    if instance.status == 'COMPLETE':
-        Notification.objects.create(
-            user=instance.user,
-            message=f"Your order is now complete. Please dont forget to leave a review."
-        )
+    # Check if this is an update (instance already exists)
+    if instance.pk:
+        previous_order = Order.objects.get(pk=instance.pk)
+        
+        # Check if the status changed to 'COMPLETE'
+        if previous_order.status != instance.status and instance.status == "COMPLETE":
+            # Notify customer
+            Notification.objects.create(
+                user=instance.user,
+                message=f"Your order has been marked as complete. Please, don't forget to leave a review once you finish dinning."
+                
+            )
+
+
+@receiver(pre_save, sender=Order)
+def order_payment_notification(sender, instance, **kwargs):
+    if instance.pk:
+        previous_order = Order.objects.get(pk=instance.pk)
+        
+        # Check if the is_paid status has changed to True
+        if not previous_order.is_paid and instance.is_paid:
+            # Notify customer
+            Notification.objects.create(
+                user=instance.user,
+                message=f"Your payment for your Order  was successful. Amount paid:ksh{instance.total_price}"
+                
+            )
+
+            # Notify cafe admin (assuming there's an admin role)
+            admins = User.objects.filter(role='cafeadmin')
+            for admin in admins:
+                Notification.objects.create(
+                    user=admin,
+                    message=f"Payment received for Order #{instance.id}. Amount paid:ksh{instance.total_price}"
+                    
+                )
