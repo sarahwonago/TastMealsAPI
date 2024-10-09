@@ -3,7 +3,8 @@ from django.urls import path
 from .views import (
     CustomerHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
     DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
-    CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView
+    CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
+    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView
 )
 
 
@@ -34,7 +35,13 @@ urlpatterns = [
     path('orders/<uuid:order_id>/cancel/', CancelOrderView.as_view(), name='customer-cancel-order'),
 
     # payment for order
-    path('order/<uuid:order_id>/payment/', PaymentView.as_view(), name="customer-pay")
+    path('order/<uuid:order_id>/payment/', PaymentView.as_view(), name="customer-pay"),
 
- 
+    # endpoints for reviews
+    path('orders/<uuid:order_id>/review/', AddReviewView.as_view(), name='customer-add-review'),
+    path('reviews/', UserReviewsView.as_view(), name='customer-reviews'),
+    path('reviews/<uuid:review_id>/update/', UpdateReviewView.as_view(), name='customer-update-review'),
+    path('reviews/<uuid:review_id>/delete/', DeleteReviewView.as_view(), name='customer-delete-review'),
+
+
 ]

@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
-from .models import CartItem, Order
+from .models import CartItem, Order, Review
+from django.utils import timezone
 
 class CartItemSerializer(serializers.ModelSerializer):
     """
@@ -43,4 +44,13 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'order_items', 'total_price', 'is_paid', 'estimated_time', 'status', 'dining_table', 'created_at', 'updated_at']
         read_only_fields = ['id', 'user', 'order_items', 'total_price', 'is_paid', 'estimated_time', 'status', 'dining_table', 'created_at', 'updated_at']
 
-   
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the Review model.
+    """
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'order', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at', 'order']
+    

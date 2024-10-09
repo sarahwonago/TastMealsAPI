@@ -534,6 +534,16 @@ POST api/customer/orders/{order_id}/cancel/
 POST api/customer/order/{order_id}/payment/
 ```
 
+17. **Reviews** customers can add reviews, update reviews, delete reviews, view reviews they have made.
+
+```
+GET api/customer/reviews/
+POST api/customer/orders/{order_id}/review/
+
+PATCH api/customer/reviews/{order_id}/update/
+DELETE api/customer/reviews/{order_id}/delete/
+```
+
 # Testing
 Run the tests using pytest:
 
