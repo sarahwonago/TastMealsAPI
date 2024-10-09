@@ -147,3 +147,23 @@ class SpecialOffer(models.Model):
         return f"{self.name} - {self.discount_percentage}% Off for {self.fooditem.name}"
     
 
+
+class Notification(models.Model):
+    """
+    Model representing notifications sent to users.
+    
+    Attributes:
+        user (ForeignKey): The user the notification is sent to.
+        message (CharField): The notification message.
+        is_read (BooleanField): Tracks whether the notification has been read.
+        created_at (DateTimeField): When the notification was created.
+    """
+    user = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.message}"
+
