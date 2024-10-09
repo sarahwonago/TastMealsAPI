@@ -4,7 +4,7 @@ from .views import (
     CustomerHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
     DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
     CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
-    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView
+    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView
 )
 
 
@@ -43,5 +43,13 @@ urlpatterns = [
     path('reviews/<uuid:review_id>/update/', UpdateReviewView.as_view(), name='customer-update-review'),
     path('reviews/<uuid:review_id>/delete/', DeleteReviewView.as_view(), name='customer-delete-review'),
 
+    # List notifications, filtering, searching, ordering
+    path('notifications/', NotificationListView.as_view(), name='customer-notifications-list'),
 
+    # Mark as read, bulk delete
+    path('notifications/mark-as-read/', BulkMarkAsReadView.as_view(), name='customer-bulk-mark-as-read'),
+    path('notifications/delete/', BulkDeleteNotificationsView.as_view(), name='customer-bulk-delete-notifications'),
+
+    # View a single notification and mark it as read
+    path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='customer-notification-detail'),
 ]

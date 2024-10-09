@@ -547,7 +547,31 @@ Admin can also view customer reviews
 
 ```
 GET /api/cafeadmin/customer-reviews/
+
 ```
+
+18. **Notifications**: endpoints for notifications with filtering, ordering, search
+**Customer Notification**
+```
+GET api/customer/notifications/
+GET api/customer/notifications/{notification_id}/
+DELETE api/customer/notifications/{notification_id}/
+
+PATCH /api/customer/notifications/mark-as-read/
+DELETE /api/customer/notifications/delete/
+
+```
+
+**CafeAdmin Notification**
+```
+GET api/cafeadmin/notifications/
+GET api/cafeadmin/notifications/{notification_id}/
+DELETE api/cafeadmin/notifications/{notification_id}/
+
+PATCH /api/cafeadmin/notifications/mark-as-read/
+DELETE /api/cafeadmin/notifications/delete/
+```
+
 # Testing
 Run the tests using pytest:
 

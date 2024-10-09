@@ -8,10 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 
-from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer
-from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
+from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer, Notification
+from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer)
 
 from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer
 from .models import CartItem, Cart, Order, Review
@@ -526,3 +527,98 @@ class DeleteReviewView(APIView):
 
         except Review.DoesNotExist:
             return Response({"detail": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class NotificationListView(APIView):
+    """
+    View to list all notifications for the authenticated user with filtering, searching, and ordering.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request):
+        user = request.user
+        notifications = Notification.objects.filter(user=user)
+        
+        # Filtering by read/unread status
+        is_read = request.query_params.get('is_read', None)
+        if is_read is not None:
+            notifications = notifications.filter(is_read=is_read.lower() == 'true')
+        
+        # Searching by message
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            notifications = notifications.filter(Q(message__icontains=search_query))
+        
+        # Ordering by created_at
+        ordering = request.query_params.get('ordering', '-updated_at')  # Default ordering by most recent
+        notifications = notifications.order_by(ordering)
+
+    
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class NotificationDetailView(APIView):
+    """
+    View to retrieve a single notification and mark it as read.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request, pk):
+        notification = get_object_or_404(Notification, pk=pk, user=request.user)
+
+        # Mark as read when viewed
+        if not notification.is_read:
+            notification.is_read = True
+            notification.save()
+
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        """
+        Deletes a single notification.
+        """
+        notification = get_object_or_404(Notification, pk=pk, user=request.user)
+        notification.delete()
+        return Response({"detail": "Notification deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class BulkMarkAsReadView(APIView):
+    """
+    View to mark multiple notifications as read for the authenticated user.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def patch(self, request):
+        notification_ids = request.data.get('notification_ids', [])
+        user = request.user
+
+        if not notification_ids:
+            return Response({"detail": "No notification IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        notifications = Notification.objects.filter(id__in=notification_ids, user=user)
+        if not notifications.exists():
+            return Response({"detail": "No matching notifications found."}, status=status.HTTP_404_NOT_FOUND)
+
+        notifications.update(is_read=True)
+        return Response({"detail": "Notifications marked as read."}, status=status.HTTP_200_OK)
+
+class BulkDeleteNotificationsView(APIView):
+    """
+    View to delete multiple notifications for the authenticated user.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def delete(self, request):
+        notification_ids = request.data.get('notification_ids', [])
+        user = request.user
+
+        if not notification_ids:
+            return Response({"detail": "No notification IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        notifications = Notification.objects.filter(id__in=notification_ids, user=user)
+        if not notifications.exists():
+            return Response({"detail": "No matching notifications found."}, status=status.HTTP_404_NOT_FOUND)
+
+        notifications.delete()
+        return Response({"detail": "Notifications deleted."}, status=status.HTTP_204_NO_CONTENT)

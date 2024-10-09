@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, DiningTable, FoodItem, SpecialOffer
+from .models import Category, DiningTable, FoodItem, SpecialOffer, Notification
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -85,3 +85,10 @@ class SpecialOfferSerializer(serializers.ModelSerializer):
         Returns the name of the food item the special offer applies to.
         """
         return obj.fooditem.name
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'is_read', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
