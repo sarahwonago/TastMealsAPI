@@ -72,3 +72,42 @@ def order_payment_notification(sender, instance, **kwargs):
                     message=f"Payment received for Order #{instance.id}. Amount paid:ksh{instance.total_price}"
                     
                 )
+
+# @receiver(post_save, sender=LoyaltyPoint)  # Assuming a LoyaltyPoint model
+# def loyalty_points_awarded_notification(sender, instance, created, **kwargs):
+#     if created:
+#         Notification.objects.create(
+#             recipient=instance.user,
+#             message=f"You've been awarded {instance.points} loyalty points.",
+#             notification_type="LOYALTY_POINTS_AWARDED"
+#         )
+# @receiver(post_save, sender=Redemption)  # Assuming a Redemption model
+# def loyalty_points_redeemed_notification(sender, instance, created, **kwargs):
+#     if created:
+#         Notification.objects.create(
+#             recipient=instance.user,
+#             message=f"You've redeemed {instance.points} loyalty points.",
+#             notification_type="LOYALTY_POINTS_REDEEMED"
+#         )
+# @receiver(pre_save, sender=Redemption)  # Assuming a Redemption model
+# def redemption_delivered_notification(sender, instance, **kwargs):
+#     if instance.pk:
+#         previous_redemption = Redemption.objects.get(pk=instance.pk)
+        
+#         # Check if the status changed to DELIVERED
+#         if previous_redemption.status != instance.status and instance.status == "DELIVERED":
+#             # Notify customer
+#             Notification.objects.create(
+#                 recipient=instance.user,
+#                 message=f"Your loyalty points redemption (ID: {instance.id}) has been delivered.",
+#                 notification_type="REDEMPTION_DELIVERED"
+#             )
+
+#             # Notify admin
+#             admins = User.objects.filter(role='admin')
+#             for admin in admins:
+#                 Notification.objects.create(
+#                     recipient=admin,
+#                     message=f"Redemption transaction {instance.id} has been delivered.",
+#                     notification_type="REDEMPTION_DELIVERED"
+#                 )
