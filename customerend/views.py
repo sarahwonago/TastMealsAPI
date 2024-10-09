@@ -14,8 +14,8 @@ from rest_framework.exceptions import ValidationError
 from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer, Notification
 from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer)
 
-from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer
-from .models import CartItem, Cart, Order, Review
+from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer, CustomerLoyaltyPointSerializer
+from .models import CartItem, Cart, Order, Review, CustomerLoyaltyPoint
 
 from account.permissions import IsCustomer
 
@@ -622,3 +622,19 @@ class BulkDeleteNotificationsView(APIView):
 
         notifications.delete()
         return Response({"detail": "Notifications deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class CustomerLoyaltyPointView(APIView):
+    """
+    Endpoint to view customer loyalty points.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def get(self, request):
+        try:
+            customer_points = CustomerLoyaltyPoint.objects.get(user=request.user)
+            serializer = CustomerLoyaltyPointSerializer(customer_points)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CustomerLoyaltyPoint.DoesNotExist:
+            return Response({"detail": "Loyalty points not found."}, status=status.HTTP_404_NOT_FOUND)
+

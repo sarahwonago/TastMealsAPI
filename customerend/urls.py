@@ -4,7 +4,8 @@ from .views import (
     CustomerHomeAPIView, CategoryListCreateAPIView, CategoryDetailAPIView,
     DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
     CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
-    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView
+    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, 
+    NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView
 )
 
 
@@ -52,4 +53,7 @@ urlpatterns = [
 
     # View a single notification and mark it as read
     path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='customer-notification-detail'),
+
+    # endpoint to view customer points
+    path("loyalty-points/", CustomerLoyaltyPointView.as_view(), name="customer-loyalty-points"),
 ]

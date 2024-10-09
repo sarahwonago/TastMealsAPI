@@ -1,9 +1,11 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import CartItem, Cart, Order
+from .models import CartItem, Cart, Order, CustomerLoyaltyPoint
 
 from cafeadminend.models import Notification
+
+from .myutils import award_customer_points
 
 User = get_user_model()
 
@@ -73,14 +75,17 @@ def order_payment_notification(sender, instance, **kwargs):
                     
                 )
 
-# @receiver(post_save, sender=LoyaltyPoint)  # Assuming a LoyaltyPoint model
-# def loyalty_points_awarded_notification(sender, instance, created, **kwargs):
-#     if created:
-#         Notification.objects.create(
-#             recipient=instance.user,
-#             message=f"You've been awarded {instance.points} loyalty points.",
-#             notification_type="LOYALTY_POINTS_AWARDED"
-#         )
+@receiver(pre_save, sender=Order)
+def award_loyalty_points(sender, instance, **kwargs):
+    if instance.pk:
+        previous_order = Order.objects.get(pk=instance.pk)
+        
+        # Check if the is_paid status has changed to True
+        if not previous_order.is_paid and instance.is_paid:
+            # award loyalty points when order is paid
+            award_customer_points(instance)
+
+
 # @receiver(post_save, sender=Redemption)  # Assuming a Redemption model
 # def loyalty_points_redeemed_notification(sender, instance, created, **kwargs):
 #     if created:

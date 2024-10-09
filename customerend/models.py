@@ -220,7 +220,7 @@ class CustomerLoyaltyPoint(models.Model):
         points(PositiveIntegerField):points awarded
 
     """
-
+    
     class Meta:
         verbose_name_plural = "CustomerLoyaltyPoints"
     

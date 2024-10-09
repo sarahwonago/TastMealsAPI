@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import CartItem, Order, Review
+from .models import CartItem, Order, Review, CustomerLoyaltyPoint
 from django.utils import timezone
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -54,3 +54,15 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'order', 'rating', 'comment', 'created_at']
         read_only_fields = ['id', 'user', 'created_at', 'order']
     
+
+
+class CustomerLoyaltyPointSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the CustomerLoyaltyPoint model
+    """
+    class Meta:
+        model = CustomerLoyaltyPoint
+        fields = ['points']
+        
+
+
