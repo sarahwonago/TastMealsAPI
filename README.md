@@ -583,11 +583,19 @@ POST api/customer/loyalty-points/{redemption_id}/redeem/
 20. **Redemption options**: cafeadmin can manage redemption options from this endpoints
 ```
 GET api/cafeadmin/redemptio-options/
+POST api/cafeadmin/redemptio-options/
 
 GET api/cafeadmin/redemptio-options/{redemption_id}/
 PUT api/cafeadmin/redemptio-options/{redemption_id}/
 DELETE api/cafeadmin/redemptio-options/{redemption_id}/
+
 ```
+
+Customer can view redemption options via:
+```
+GET api/customer/redemption-options/
+```
+
 # Testing
 Run the tests using pytest:
 

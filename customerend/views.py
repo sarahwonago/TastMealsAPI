@@ -690,6 +690,13 @@ class RedeemLoyaltyPointsAPIView(APIView):
             redemption_option=redemption_option,
             points_redeemed=points_required,
         )
+
+        # send notification to user
+        Notification.objects.create(
+            user=user,
+            message=f"You have redeemed {points_required} for {redemption_option.fooditem}. Go pick it up at the counter",
+
+        )
         
         
-        return Response({"message":"Successfully redeemed {points_required}."}, status=status.HTTP_201_CREATED)
+        return Response({"message":f"Successfully redeemed {points_required}. points"}, status=status.HTTP_201_CREATED)
