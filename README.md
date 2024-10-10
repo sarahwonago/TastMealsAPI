@@ -572,6 +572,22 @@ PATCH /api/cafeadmin/notifications/mark-as-read/
 DELETE /api/cafeadmin/notifications/delete/
 ```
 
+19. **Loyalty points**: customers can view their loyalty points , redeem loyalty points
+```
+GET api/customer/loyalty-points/
+
+POST api/customer/loyalty-points/{redemption_id}/redeem/
+
+```
+
+20. **Redemption options**: cafeadmin can manage redemption options from this endpoints
+```
+GET api/cafeadmin/redemptio-options/
+
+GET api/cafeadmin/redemptio-options/{redemption_id}/
+PUT api/cafeadmin/redemptio-options/{redemption_id}/
+DELETE api/cafeadmin/redemptio-options/{redemption_id}/
+```
 # Testing
 Run the tests using pytest:
 

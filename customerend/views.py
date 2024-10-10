@@ -9,10 +9,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.db.models import Q
-from rest_framework.exceptions import ValidationError
 
-from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer, Notification
-from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer)
+
+from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer, Notification, RedemptionOption, RedemptionTransaction
+from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer, RedemptionOptionSerializer)
 
 from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer, CustomerLoyaltyPointSerializer
 from .models import CartItem, Cart, Order, Review, CustomerLoyaltyPoint
@@ -637,4 +637,59 @@ class CustomerLoyaltyPointView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except CustomerLoyaltyPoint.DoesNotExist:
             return Response({"detail": "Loyalty points not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class RedemptionOptionListView(APIView):
+    """
+    Handles the creation and listing of RedemptionOptions using APIView.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
 
+    def get(self, request, *args, **kwargs):
+        """
+        Fetches all redemption options.
+        """
+        options = RedemptionOption.objects.all()
+        
+        # Filtering, Searching, Ordering
+        points_required = request.query_params.get('points_required', None)
+        search_query = request.query_params.get('search', None)
+        ordering = request.query_params.get('ordering', None)
+
+        if points_required:
+            options = options.filter(points_required=points_required)
+        if search_query:
+            options = options.filter(fooditem__name__icontains=search_query) | options.filter(description__icontains=search_query)
+        if ordering:
+            options = options.order_by(ordering)
+
+        serializer = RedemptionOptionSerializer(options, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class RedeemLoyaltyPointsAPIView(APIView):
+    """
+    Endpoint to redeem customer loyalty points.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    def post(self, request,redemption_id, *args, **kwargs):
+        redemption_option = RedemptionOption.objects.get(id=redemption_id)
+        points_required = redemption_option.points_required
+        user = request.user
+
+        # Check if user has enough points
+        if user.customerloyaltypoint.points < points_required:
+            return Response({"message":"You don't have enough points to redeem this option."},status=status.HTTP_400_BAD_REQUEST)
+
+        # Deduct points
+        user.customerloyaltypoint.points -= points_required
+        user.customerloyaltypoint.save()
+
+        # Create Redemption Transaction
+        transaction = RedemptionTransaction.objects.create(
+            customer=user,
+            redemption_option=redemption_option,
+            points_redeemed=points_required,
+        )
+        
+        
+        return Response({"message":"Successfully redeemed {points_required}."}, status=status.HTTP_201_CREATED)

@@ -5,7 +5,7 @@ from .views import (
     DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
     CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
     AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, 
-    NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView
+    NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView, RedeemLoyaltyPointsAPIView, RedemptionOptionListView
 )
 
 
@@ -56,4 +56,10 @@ urlpatterns = [
 
     # endpoint to view customer points
     path("loyalty-points/", CustomerLoyaltyPointView.as_view(), name="customer-loyalty-points"),
+
+    # endpoint to redeem loyalty point
+    path("loyalty-points/redeem/<uuid:redemption_id>/", RedeemLoyaltyPointsAPIView.as_view(), name="customer-redeem-points"),
+
+    # redemption options
+    path("redemption-options/", RedemptionOptionListView.as_view(), name="customer-remption-option"),
 ]
