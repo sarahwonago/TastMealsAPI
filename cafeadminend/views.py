@@ -767,6 +767,7 @@ class RedemptionOptionDetailView(APIView):
         option = self.get_object(pk)
         option.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+            
 
 
 class RedemptionTransactionListView(APIView):
@@ -814,9 +815,14 @@ class RedemptionTransactionDetailView(APIView):
 
     def delete(self, request, pk, *args, **kwargs):
         transaction = self.get_object(pk)
-        transaction.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
+        
+        if transaction.status == 'DELIVERED':
+            transaction.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"message":"You cannot delete if not delivered"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    
 
 class MarkRedemptionTransactionDeliveredView(APIView):
     """
@@ -830,7 +836,9 @@ class MarkRedemptionTransactionDeliveredView(APIView):
         except RedemptionTransaction.DoesNotExist:
             raise ValidationError("Transaction not found")
 
-    def put(self, request, pk, *args, **kwargs):
+    def patch(self, request, pk, *args, **kwargs):
+
+        #fix this, send the status in the body
         transaction = self.get_object(pk)
         transaction.status = 'DELIVERED'
         transaction.save()

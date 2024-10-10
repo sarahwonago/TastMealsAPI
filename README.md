@@ -588,6 +588,17 @@ POST api/cafeadmin/redemptio-options/
 GET api/cafeadmin/redemptio-options/{redemption_id}/
 PUT api/cafeadmin/redemptio-options/{redemption_id}/
 DELETE api/cafeadmin/redemptio-options/{redemption_id}/
+```
+
+Redemption options transaction
+
+```
+GET api/cafeadmin/redemption-transactions/
+
+GET api/cafeadmin/redemption-transactions/{redemption_transaction_id}/
+DELETE api/cafeadmin/redemption-transactions/{redemption_transaction_id}/
+
+PATCH api/cafeadmin/redemption-transactions/{redemption_transaction_id}/mark-delivered/
 
 ```
 

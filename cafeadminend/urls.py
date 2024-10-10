@@ -50,3 +50,4 @@ urlpatterns = [
     path('redemption-transactions/<uuid:pk>/mark-delivered/', MarkRedemptionTransactionDeliveredView.as_view(), name='redemption-transaction-delivered'),
 
 ]
+
