@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, filters
 from rest_framework.exceptions import ValidationError
 from django.db.models import Q
-from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view
+from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiExample
 
 from account.permissions import IsAdmin
 from .models import Category, DiningTable, FoodItem, SpecialOffer, Notification, RedemptionOption, RedemptionTransaction
@@ -59,6 +59,17 @@ class CategoryListCreateAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdmin]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="name", description="Filter by category name", required=False, type=str),
+            OpenApiParameter(name="search", description="Search within category name and description", required=False, type=str),
+            OpenApiParameter(name="ordering", description="Order by a specific field (e.g., '-created_at')", required=False, type=str),
+        ],
+        responses={
+            200: CategorySerializer(many=True),
+            404: OpenApiExample("No categories found.", response_only=True, value={"detail": "No categories found."})
+        }
+    )
     def get(self, request, *args, **kwargs):
         """
         **GET**:Retrieves a list of categories with optional filtering, searching, and ordering.
@@ -102,7 +113,13 @@ class CategoryListCreateAPIView(APIView):
         logger.info("No categories found.")
         return Response({"detail": "No Categories available."}, status=status.HTTP_200_OK)
     
-    
+    @extend_schema(
+        request=CategorySerializer,
+        responses={
+            201: CategorySerializer,
+            400: OpenApiExample("Validation error.", response_only=True, value={"name": "Category with this name already exists."}),
+        }
+    )
     def post(self, request, *args, **kwargs):
         """
         Create a new category.
@@ -157,6 +174,7 @@ class CategoryDetailAPIView(APIView):
      
     permission_classes = [IsAuthenticated, IsAdmin]
 
+    
     def get_object(self, pk):
         """
         Retrieve a category instance by its primary key.
@@ -165,7 +183,13 @@ class CategoryDetailAPIView(APIView):
             return Category.objects.get(pk=pk)
         except Category.DoesNotExist:
             return None
-
+        
+    @extend_schema(
+        responses={
+            200: CategorySerializer,
+            404: OpenApiExample("Category not found.", response_only=True, value={"detail": "Category not found."}),
+        }
+    )
     def get(self, request, pk, *args, **kwargs):
         """
         Retrieve category details by ID.
@@ -186,6 +210,13 @@ class CategoryDetailAPIView(APIView):
         logger.debug(f"Fetched details for category with ID {pk}")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        request=CategorySerializer,
+        responses={
+            200: CategorySerializer,
+            400: OpenApiExample("Validation error.", response_only=True, value={"detail": "Invalid data."}),
+        }
+    )
     def put(self, request, pk, *args, **kwargs):
         """
         Update a category by ID.
@@ -214,7 +245,14 @@ class CategoryDetailAPIView(APIView):
         else:
             logger.error(f"Failed to update category with ID {pk}. Errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+    @extend_schema(
+        request=CategorySerializer,
+        responses={
+            200: CategorySerializer,
+            400: OpenApiExample("Validation error.", response_only=True, value={"detail": "Invalid data."}),
+        }
+    ) 
     def patch(self, request, pk, *args, **kwargs):
         """
         Partially update a category by ID.
@@ -241,6 +279,12 @@ class CategoryDetailAPIView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        responses={
+            204: OpenApiExample("Category deleted successfully.", response_only=True, value={"message": "Category deleted successfully."}),
+            404: OpenApiExample("Category not found.", response_only=True, value={"detail": "Category not found."}),
+        }
+    )
     def delete(self, request, pk, *args, **kwargs):
         """
         Delete a category by ID.
