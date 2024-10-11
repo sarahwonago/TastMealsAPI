@@ -35,7 +35,7 @@ class CustomerHomeAPIView(APIView):
         return Response({"message":"Welcome home customer"}, status=status.HTTP_200_OK)
     
 
-class CategoryListCreateAPIView(APIView):
+class CategoryListAPIView(APIView):
     """
     API view to retrieve list of all categories.
 
