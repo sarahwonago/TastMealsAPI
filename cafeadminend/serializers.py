@@ -7,6 +7,10 @@ class CategorySerializer(serializers.ModelSerializer):
     Serializer for the Category model.
 
     Serializes the Category model fields to JSON format.
+
+    Meta:
+        model (Category): The model to be serialized.
+        fields (list): Fields to be included in the serialization.
     """
 
     class Meta:
