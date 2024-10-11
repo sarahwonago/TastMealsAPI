@@ -192,6 +192,9 @@ CACHE_MIDDLEWARE_SECONDS = 300  # 5 minutes
 
 
 # LOGGING CONFIGURATIONS
+
+import os
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -206,31 +209,19 @@ LOGGING = {
         },
     },
     'handlers': {
-        'console': {
-            'level': 'DEBUG',  # Capture all logs at DEBUG level
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',  # Use the verbose format for detailed output
-        },
         'file': {
-            'level': 'DEBUG',  # Log all DEBUG and above levels
+            'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'logs/debug.log',  # File to save logs
-            'formatter': 'verbose',  # Use the verbose format for file logging
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],  # Log to both console and file
-            'level': 'DEBUG',  # Set logger level to DEBUG for Django
-        },
-        'django.db.backends': {
-            'level': 'ERROR',  # Limit SQL logging to ERROR level to reduce noise
-            'handlers': ['console'],  # Log SQL errors only to the console
-        },
-        'customerend': {  # Custom logger for your application 
-            'handlers': ['console', 'file'],  # Log to both console and file
-            'level': 'DEBUG',  # Log all DEBUG and above levels for your app
-            'propagate': True,  # Propagate messages to the parent logger
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }
+

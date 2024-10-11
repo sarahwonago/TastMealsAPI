@@ -5,15 +5,12 @@ from django.contrib.auth.models import AbstractUser
 class CustomUser(AbstractUser):
     """
     Custom User Model extending AbstractUser.
-    Added attributes id, roles.
+    Added attributes id, role.
 
     Attributes:
-        id(UUID): unique identifier for a user instance
-        role(CharField): defines the role of the user
+        id(UUID): Unique identifier for a user instance.
+        role(CharField): Defines the role of the user.
     """
-
-    CUSTOMER = 'customer',
-    CAFEADMIN = 'cafeadmin'
 
     ROLE_CHOICES = (
         ('customer', 'Customer'),
@@ -24,4 +21,4 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="customer")
 
     def __str__(self) -> str:
-        return self.username
+        return f"{self.username}"
