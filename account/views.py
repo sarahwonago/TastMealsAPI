@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+
 from django.urls import reverse_lazy
 
 logger = logging.getLogger(__name__)
@@ -11,12 +12,19 @@ logger = logging.getLogger(__name__)
 
 class RoleBasedRedirectAPIView(APIView):
    """
-   API view to redirect users based on their role.
+    API view to redirect users based on their role.
 
-   Returns:
-      role (str): User's role.
-      redirect_url (str): URL for redirecting based on the role.
-   """
+    This endpoint will return the role of the user and the URL to which they should be redirected.
+    
+    **Responses:**
+
+    - **200 OK**
+      - `role` (str): User's role.
+      - `redirect_url` (str): URL for redirecting based on the role.
+    
+    - **403 Forbidden**
+      - User is not authenticated or lacks permission to access this resource.
+    """
 
    permission_classes = [IsAuthenticated]
 
@@ -28,7 +36,7 @@ class RoleBasedRedirectAPIView(APIView):
       else:
          redirect_url = reverse_lazy('cafeadmin-home')
 
-      logger.info(f"User {request.user.name} with role {role} was redirected  to {redirect_url}")
+      logger.info(f"User {request.user.username} with role {role} was redirected  to {redirect_url}")
           
       response = {
          "role":role,
