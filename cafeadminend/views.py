@@ -18,7 +18,6 @@ from customerend.models import Review
 from customerend.serializers import ReviewSerializer
 from menu.models import Category, DiningTable, FoodItem, SpecialOffer
 
-
 # sets up logging for this module
 logger = logging.getLogger(__name__)
 

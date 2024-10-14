@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/customer/', include('customerend.urls')),
     path('api/cafeadmin/', include('cafeadminend.urls')),
     path("api/account/", include('account.urls')),
+    path("api/menu/", include('menu.urls')),
 ]
 
 if settings.DEBUG:
