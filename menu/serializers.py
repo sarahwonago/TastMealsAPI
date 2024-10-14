@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Category, DiningTable, FoodItem, SpecialOffer
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 
 class CategorySerializer(serializers.ModelSerializer):
     """
@@ -25,8 +27,8 @@ class DiningTableSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = DiningTable
-        fields = ['id', 'table_number', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = ['id', 'table_number']
+        read_only_fields = ['id']
 
 
 class FoodItemSerializer(serializers.ModelSerializer):
@@ -35,17 +37,19 @@ class FoodItemSerializer(serializers.ModelSerializer):
     """
 
     category = serializers.CharField(source='category.name', read_only=True)
+
     #category_name = serializers.SerializerMethodField()
+
 
     class Meta:
         model = FoodItem
         fields = [
-            'id', 'category', 'name', 'price', 'image', 'description',
-            'created_at', 'updated_at', 'is_available'
+            'id', 'category', 'name', 'price', 'description'
         ]
         read_only_fields = [
-            'id', 'category','created_at', 'updated_at'
+            'id', 'category'
         ]
+
 
     # def get_category_name(self, obj):
     #     """

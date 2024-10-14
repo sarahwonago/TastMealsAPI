@@ -10,11 +10,14 @@ from django.views.decorators.cache import cache_page
 from django.core.cache import cache
 from django.db.models import Q
 
+from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiExample
+
 
 from cafeadminend.models import  Notification, RedemptionOption, RedemptionTransaction
 from menu.models import Category, FoodItem, SpecialOffer, DiningTable
-from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer, RedemptionOptionSerializer)
+from cafeadminend.serializers import (NotificationSerializer, RedemptionOptionSerializer)
 
+from menu.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
 from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer, CustomerLoyaltyPointSerializer
 from .models import CartItem, Cart, Order, Review, CustomerLoyaltyPoint
 
@@ -44,52 +47,60 @@ class CategoryListAPIView(APIView):
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="name", description="Filter by category name", required=False, type=str),
+            OpenApiParameter(name="search", description="Search within category name and description", required=False, type=str),
+            OpenApiParameter(name="ordering", description="Order by a specific field (e.g., '-created_at')", required=False, type=str),
+        ],
+        responses={
+            200: CategorySerializer(many=True),
+            404: OpenApiExample("No categories found.", response_only=True, value={"detail": "No categories found."})
+        }
+    )
     def get(self, request, *args, **kwargs):
         """
-        Retrieves a list of categories with optional filtering, searching, and ordering.
+        **GET**:Retrieves a list of categories with optional filtering, searching, and ordering.
 
-        - Filters: ?name=fruits
-        - Search: ?search=fruit
-        - Order: ?ordering=-created_at
+        URL Parameters:
+            name (str): Filter by category name.?name=fruits
+            search (str): Search categories by name or description.?search=fruit
+            ordering (str): Order by specified field, default is created_at.?ordering=-created_at
+
+        Returns:
+            Response (JSON): List of categories.
         """
+       
         logger.debug("Fetching all categories with filters and search options")
 
-        # Apply filtering, searching, and ordering
         categories = Category.objects.all()
 
+        # checks if name, search, ordering query params have been passed
+        name_filter = request.query_params.get('name')
+        search_query = request.query_params.get('search')
+        ordering = request.query_params.get('ordering', 'created_at')
+
+        # applying filters, search and ordering
+        if name_filter:
+            categories = categories.filter(name__icontains=name_filter)
+
+        if search_query:
+            categories = categories.filter(
+                name__icontains=search_query
+            ) | categories.filter(
+                description__icontains=search_query
+            )
+
+        if ordering:
+            categories = categories.order_by(ordering)
+
         if categories.exists():
-            name_filter = request.query_params.get('name')
-            search_query = request.query_params.get('search')
-            ordering = request.query_params.get('ordering', 'created_at')
-
-            # Filtering by name
-            if name_filter:
-                categories = categories.filter(name__icontains=name_filter)
-
-            # Searching in name and description
-            if search_query:
-                categories = categories.filter(
-                    name__icontains=search_query
-                ) | categories.filter(
-                    description__icontains=search_query
-                )
-
-            # Ordering
-            if ordering:
-                categories = categories.order_by(ordering)
-
             serializer = CategorySerializer(categories, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         logger.info("No categories found.")
-        return Response({"detail":"No Categories available."}, status=status.HTTP_200_OK)
-
-
-    # Cache the list of categories for 5 minutes
-    @method_decorator(cache_page(60 * 5))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-
+        return Response({"detail": "No Categories available."}, status=status.HTTP_200_OK)
+    
 class CategoryDetailAPIView(APIView):
     """
     API view to retrieve a category.
@@ -121,11 +132,6 @@ class CategoryDetailAPIView(APIView):
         # modify to include fooditems under this category
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # Cache the category detail for 5 minutes
-    @method_decorator(cache_page(60 * 5))
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
-   
 
 class DiningTableListAPIView(APIView):
     """
@@ -135,44 +141,39 @@ class DiningTableListAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        summary="List all dining tables",
+        description="Retrieve a list of all dining tables. Supports filtering, searching, and ordering.",
+        parameters=[
+            OpenApiParameter("table_number", str, description="Filter by table number"),
+            OpenApiParameter("search", str, description="Search by table number (partial match)"),
+            OpenApiParameter("ordering", str, description="Order by field, default is 'created_at'. Use '-' for descending order.")
+        ],
+        responses={200: DiningTableSerializer(many=True)},
+    )
     def get(self, request, *args, **kwargs):
         """
         List all dining tables with filtering, searching, and ordering.
-        Cached for 5 minutes.
         """
-        cache_key = "dining_table_list"
-        cached_data = cache.get(cache_key)
-
-        if cached_data:
-            logger.debug("Serving dining table list from cache.")
-            return Response(cached_data)
-
         tables = DiningTable.objects.all()
 
-        # Filter by table_number
+        # Filtering
         table_number = request.query_params.get('table_number', None)
         if table_number:
             tables = tables.filter(table_number=table_number)
 
-        # Search
+        # Searching
         search = request.query_params.get('search', None)
         if search:
             tables = tables.filter(table_number__icontains=search)
 
         # Ordering
         ordering = request.query_params.get('ordering', 'created_at')
-        if ordering.startswith('-'):
-            tables = tables.order_by(ordering)
-        else:
-            tables = tables.order_by(ordering)
+        tables = tables.order_by(ordering)
 
-        
         serializer = DiningTableSerializer(tables, many=True)
-
-        cache.set(cache_key, serializer.data, timeout=300)  # Cache for 5 minutes
-        logger.debug("Caching dining table list for 5 minutes.")
-
         return Response(serializer.data, status=status.HTTP_200_OK)
+
     
 class SpecialOfferListAPIView(APIView):
     """
