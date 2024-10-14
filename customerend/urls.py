@@ -2,8 +2,7 @@ from django.urls import path
 
 from .views import (
     CustomerHomeAPIView, CategoryListAPIView, CategoryDetailAPIView, FoodItemListAPIView,
-    DiningTableListAPIView, SpecialOfferListAPIView,
-    AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, 
+    DiningTableListAPIView, SpecialOfferListAPIView,NotificationListView, 
     NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView, RedeemLoyaltyPointsAPIView, RedemptionOptionListView
 )
 
@@ -24,12 +23,6 @@ urlpatterns = [
 
     # specialoffer endpoint
     path("specialoffers/", SpecialOfferListAPIView.as_view(), name="customer-specialoffers-list"),
-
-    # endpoints for reviews
-    path('orders/<uuid:order_id>/review/', AddReviewView.as_view(), name='customer-add-review'),
-    path('reviews/', UserReviewsView.as_view(), name='customer-reviews'),
-    path('reviews/<uuid:review_id>/update/', UpdateReviewView.as_view(), name='customer-update-review'),
-    path('reviews/<uuid:review_id>/delete/', DeleteReviewView.as_view(), name='customer-delete-review'),
 
     # List notifications, filtering, searching, ordering
     path('notifications/', NotificationListView.as_view(), name='customer-notifications-list'),

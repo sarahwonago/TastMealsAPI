@@ -1,10 +1,10 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import Order, CustomerLoyaltyPoint
-from cart.models import CartItem, Cart
+from cart.models import CartItem
+from order.models import Order
 
-from cafeadminend.models import Notification, RedemptionOption
+from cafeadminend.models import Notification
 
 from .myutils import award_customer_points
 

@@ -14,8 +14,8 @@ from account.permissions import IsAdmin
 from .models import Notification, RedemptionOption, RedemptionTransaction
 from .serializers import (NotificationSerializer, RedemptionOptionSerializer, RedemptionTransactionSerializer)
 
-from customerend.models import Review
-from customerend.serializers import ReviewSerializer
+from review.models import Review
+from review.serializers import ReviewSerializer
 from menu.models import FoodItem
 
 # sets up logging for this module

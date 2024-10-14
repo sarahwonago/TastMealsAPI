@@ -14,8 +14,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from account.permissions import IsAdmin
 from .serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
 
-from customerend.models import Review
-from customerend.serializers import ReviewSerializer
+from review.models import Review
+from review.serializers import ReviewSerializer
 from .models import Category, DiningTable, FoodItem, SpecialOffer
 
 # sets up logging for this module

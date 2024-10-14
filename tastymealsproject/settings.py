@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     "order.apps.OrderConfig",
     #payment management
     "payment.apps.PaymentConfig",
+    #review management
+    "review.apps.ReviewConfig",
     
 ]
 

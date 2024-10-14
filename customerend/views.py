@@ -15,9 +15,8 @@ from menu.models import Category, FoodItem, SpecialOffer, DiningTable
 from cafeadminend.serializers import (NotificationSerializer, RedemptionOptionSerializer)
 
 from menu.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
-from .serializers import ReviewSerializer, CustomerLoyaltyPointSerializer
-from .models import Review, CustomerLoyaltyPoint
-from order.models import Order
+from .serializers import CustomerLoyaltyPointSerializer
+from .models import CustomerLoyaltyPoint
 
 from account.permissions import IsCustomer
 
@@ -251,97 +250,6 @@ class SpecialOfferListAPIView(APIView):
         serializer = SpecialOfferSerializer(special_offers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-
-
-class AddReviewView(APIView):
-    """
-    API view to add a review for a fully paid order on the same day.
-    """
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def post(self, request, order_id):
-        user = request.user
-        try:
-            order = Order.objects.get(id=order_id, user=user)
-
-            # checks if the order has already been reviewed
-            if order.review:
-                return Response({"detail": "Order has alreeady been reviewed. Try updating it."}, status=status.HTTP_400_BAD_REQUEST)
-
-
-            # Ensure that the order is fully paid
-            if not order.is_paid:
-                return Response({"detail": "You can only review fully paid orders."}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Ensure that the review is made on the same day the order was paid for
-            if order.updated_at.date() != timezone.now().date():
-                return Response({"detail": "You can only review the order on the same day it was paid."}, status=status.HTTP_400_BAD_REQUEST)
-
-            serializer = ReviewSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(user=user, order=order)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Order.DoesNotExist:
-            return Response({"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
-
-
-class UserReviewsView(APIView):
-    """
-    API view to list all reviews made by the logged-in user.
-    """
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def get(self, request):
-        reviews = Review.objects.filter(user=request.user)
-        serializer = ReviewSerializer(reviews, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class UpdateReviewView(APIView):
-    """
-    API view to update a review on the same day it was created and the order was paid for.
-    """
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def patch(self, request, review_id):
-        user = request.user
-        try:
-            review = Review.objects.get(id=review_id, user=user)
-
-            if review.order.updated_at.date() != timezone.now().date():
-                return Response({"detail": "You can only update the review on the same day the order was paid."}, status=status.HTTP_400_BAD_REQUEST)
-
-            serializer = ReviewSerializer(review, data=request.data, partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        except Review.DoesNotExist:
-            return Response({"detail": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
-
-
-class DeleteReviewView(APIView):
-    """
-    API view to delete a review.
-    """
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def delete(self, request, review_id):
-        user = request.user
-        try:
-            review = Review.objects.get(id=review_id, user=user)
-            review.delete()
-            return Response({"detail": "Review deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
-
-        except Review.DoesNotExist:
-            return Response({"detail": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
-
 
 class NotificationListView(APIView):
     """
