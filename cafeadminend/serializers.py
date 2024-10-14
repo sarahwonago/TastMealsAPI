@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Category, DiningTable, FoodItem, SpecialOffer, Notification, RedemptionOption, RedemptionTransaction
-
+from .models import Notification, RedemptionOption, RedemptionTransaction
+from menu.models import Category, DiningTable, FoodItem, SpecialOffer
 
 class CategorySerializer(serializers.ModelSerializer):
     """

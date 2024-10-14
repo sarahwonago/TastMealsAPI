@@ -11,11 +11,12 @@ from django.db.models import Q
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, OpenApiExample
 
 from account.permissions import IsAdmin
-from .models import Category, DiningTable, FoodItem, SpecialOffer, Notification, RedemptionOption, RedemptionTransaction
+from .models import Notification, RedemptionOption, RedemptionTransaction
 from .serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer, RedemptionOptionSerializer, RedemptionTransactionSerializer)
 
 from customerend.models import Review
 from customerend.serializers import ReviewSerializer
+from menu.models import Category, DiningTable, FoodItem, SpecialOffer
 
 
 # sets up logging for this module

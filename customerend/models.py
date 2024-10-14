@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 User = get_user_model()
-from cafeadminend.models import DiningTable, FoodItem, SpecialOffer
+from menu.models import DiningTable, FoodItem, SpecialOffer
 
 class Cart(models.Model):
     """

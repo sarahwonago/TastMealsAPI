@@ -11,7 +11,8 @@ from django.core.cache import cache
 from django.db.models import Q
 
 
-from cafeadminend.models import Category, DiningTable, FoodItem, SpecialOffer, Notification, RedemptionOption, RedemptionTransaction
+from cafeadminend.models import  Notification, RedemptionOption, RedemptionTransaction
+from menu.models import Category, FoodItem, SpecialOffer, DiningTable
 from cafeadminend.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer, NotificationSerializer, RedemptionOptionSerializer)
 
 from .serializers import CartItemSerializer, OrderSerializer, ReviewSerializer, CustomerLoyaltyPointSerializer
