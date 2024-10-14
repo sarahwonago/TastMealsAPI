@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     "cart.apps.CartConfig",
     #order management
     "order.apps.OrderConfig",
+    #payment management
+    "payment.apps.PaymentConfig",
+    
 ]
 
 AUTH_USER_MODEL = "account.CustomUser"

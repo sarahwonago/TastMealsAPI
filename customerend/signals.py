@@ -34,54 +34,52 @@ def update_cart_total_on_delete(sender, instance, **kwargs):
 
 
 
-# @receiver(pre_save, sender=Order)
-# def order_status_change_notification(sender, instance, **kwargs):
-#     """
-#     Send a notification to the customer when the order status changes to 'COMPLETE'.
-#     """
-#     # Check if this is an update (instance already exists)
-#     if instance.pk:
-#         previous_order = Order.objects.get(pk=instance.pk)
-        
-#         # Check if the status changed to 'COMPLETE'
-#         if previous_order.status != instance.status and instance.status == "COMPLETE":
-#             # Notify customer
-#             Notification.objects.create(
-#                 user=instance.user,
-#                 message=f"Your order has been marked as complete. Please, don't forget to leave a review once you finish dinning."
-                
-#             )
+@receiver(pre_save, sender=Order)
+def order_status_change_notification(sender, instance, **kwargs):
+    """
+    Send a notification to the customer when the order status changes to 'COMPLETE'.
+    """
+    # Check if this is an update (instance already exists)
+    if instance.pk:
+        previous_order = Order.objects.filter(pk=instance.pk).first()
+        if previous_order:
+            # Check if the status changed to 'COMPLETE'
+            if previous_order.status != instance.status and instance.status == "COMPLETE":
+                # Notify customer
+                Notification.objects.create(
+                    user=instance.user,
+                    message="Your order has been marked as complete. Please, don't forget to leave a review once you finish dining."
+                )
 
 
-# @receiver(pre_save, sender=Order)
-# def order_payment_notification(sender, instance, **kwargs):
-#     if instance.pk:
-#         previous_order = Order.objects.get(pk=instance.pk)
-        
-#         # Check if the is_paid status has changed to True
-#         if not previous_order.is_paid and instance.is_paid:
-#             # Notify customer
-#             Notification.objects.create(
-#                 user=instance.user,
-#                 message=f"Your payment for your Order  was successful. Amount paid:ksh{instance.total_price}"
-                
-#             )
+@receiver(pre_save, sender=Order)
+def order_payment_notification(sender, instance, **kwargs):
+    if instance.pk:
+        previous_order = Order.objects.filter(pk=instance.pk).first()
+        if previous_order:
+            # Check if the is_paid status has changed to True
+            if not previous_order.is_paid and instance.is_paid:
+                # Notify customer
+                Notification.objects.create(
+                    user=instance.user,
+                    message=f"Your payment for Order was successful. Amount paid: ksh {instance.total_price}"
+                )
 
-#             # Notify cafe admin (assuming there's an admin role)
-#             admins = User.objects.filter(role='cafeadmin')
-#             for admin in admins:
-#                 Notification.objects.create(
-#                     user=admin,
-#                     message=f"Payment received for Order #{instance.id}. Amount paid:ksh{instance.total_price}"
-                    
-#                 )
+                # Notify cafe admin
+                admins = User.objects.filter(role='cafeadmin')
+                for admin in admins:
+                    Notification.objects.create(
+                        user=admin,
+                        message=f"Payment received for Order #{instance.id}. Amount paid: ksh {instance.total_price}"
+                    )
 
-# @receiver(pre_save, sender=Order)
-# def award_loyalty_points(sender, instance, **kwargs):
-#     if instance.pk:
-#         previous_order = Order.objects.get(pk=instance.pk)
-        
-#         # Check if the is_paid status has changed to True
-#         if not previous_order.is_paid and instance.is_paid:
-#             # award loyalty points when order is paid
-#             award_customer_points(instance)
+
+@receiver(pre_save, sender=Order)
+def award_loyalty_points(sender, instance, **kwargs):
+    if instance.pk:
+        previous_order = Order.objects.filter(pk=instance.pk).first()
+        if previous_order:
+            # Check if the is_paid status has changed to True
+            if not previous_order.is_paid and instance.is_paid:
+                # award loyalty points when order is paid
+                award_customer_points(instance)
