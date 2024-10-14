@@ -103,9 +103,9 @@ class CategoryListAPIView(APIView):
     
 class CategoryDetailAPIView(APIView):
     """
-    API view to retrieve a category.
+    API view to retrieve  fooditems under specific category.
 
-    - GET: Retrieves details of a category by ID.
+    - GET: Retrieves all fooditems under a specific category.
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
@@ -117,9 +117,10 @@ class CategoryDetailAPIView(APIView):
 
     def get(self, request, pk, *args, **kwargs):
         """
-        Retrieve a single category by ID.
+        Retrieve fooditems under specific category.
         """
         category = self.get_object(pk)
+
         if not category:
             logger.error(f"Category with ID {pk} not found.")
             return Response({"error": "Category not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -132,7 +133,68 @@ class CategoryDetailAPIView(APIView):
         # modify to include fooditems under this category
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class FoodItemListAPIView(APIView):
+    """
+    API view to retrieve all fooditems.
 
+    - GET: Returns a list of all fooditems with filtering, searching, and ordering.
+    """
+    permission_classes = [IsAuthenticated, IsCustomer]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="name", description="Filter by fooditem name", required=False, type=str),
+            OpenApiParameter(name="search", description="Search within fooditem name and description", required=False, type=str),
+            OpenApiParameter(name="ordering", description="Order by a specific field (e.g., '-created_at')", required=False, type=str),
+        ],
+        responses={
+            200: FoodItemSerializer(many=True),
+            404: OpenApiExample("No fooditems found.", response_only=True, value={"detail": "No fooditems found."})
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        **GET**:Retrieves a list of all fooditems with optional filtering, searching, and ordering.
+
+        URL Parameters:
+            name (str): Filter by fooditem name.?name=rice
+            search (str): Search fooditems by name or description.?search=rice
+            ordering (str): Order by specified field, default is created_at.?ordering=-created_at
+
+        Returns:
+            Response (JSON): List of fooditems.
+        """
+       
+        logger.debug("Fetching all fooditems with filters and search options")
+
+        fooditems = FoodItem.objects.filter(is_available=True)
+
+        # checks if name, search, ordering query params have been passed
+        name_filter = request.query_params.get('name')
+        search_query = request.query_params.get('search')
+        ordering = request.query_params.get('ordering', 'created_at')
+
+        # applying filters, search and ordering
+        if name_filter:
+            fooditems = fooditems.filter(name__icontains=name_filter)
+
+        if search_query:
+            fooditems = fooditems.filter(
+                name__icontains=search_query
+            ) | fooditems.filter(
+                description__icontains=search_query
+            )
+
+        if ordering:
+            fooditems = fooditems.order_by(ordering)
+
+        if fooditems.exists():
+            serializer = FoodItemSerializer(fooditems, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        logger.info("No fooditems found.")
+        return Response({"detail": "No fooditems available."}, status=status.HTTP_200_OK)
+    
 class DiningTableListAPIView(APIView):
     """
     API view to retrieve dining tables.

@@ -630,3 +630,198 @@ class FoodItemDetailView(APIView):
         
         logger.info(f"Food item '{fooditem.name}' deleted successfully.")
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SpecialOfferListAPIView(APIView):
+    """
+    API view to list all SpecialOffers.
+
+    Methods:
+        - get: Retrieve a list of all active SpecialOffers.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        summary="List all active SpecialOffers",
+        responses={200: SpecialOfferSerializer(many=True)},
+        description="Retrieve a list of all active SpecialOffers in the system.",
+    )
+    def get(self, request, format=None):
+        """
+        Retrieve a list of all active SpecialOffers.
+
+        Returns:
+            Response: A JSON response with the list of special offers.
+        """
+        # special_offers = SpecialOffer.objects.filter(is_active=True)
+        special_offers = SpecialOffer.objects.all()
+        serializer = SpecialOfferSerializer(special_offers, many=True)
+        logger.info("Retrieved %d active SpecialOffers.", special_offers.count())
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SpecialOfferCreateAPIView(APIView):
+    """
+    API view to handle creating a new SpecialOffer for a specific FoodItem.
+
+    Methods:
+        - post: Create a new SpecialOffer for a given food item.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        summary="Create a new SpecialOffer",
+        description="Create a new SpecialOffer for a specific FoodItem. Requires the ID of the FoodItem.",
+        request=SpecialOfferSerializer,
+        responses={
+            201: SpecialOfferSerializer,
+            400: OpenApiExample(
+                "SpecialOffer with this FoodItem already exists or invalid data.",
+                value={"detail": "SpecialOffer for this FoodItem already exists."},
+            ),
+            404: OpenApiExample(
+                "FoodItem not found.",
+                value={"detail": "Active FoodItem not found."},
+            ),
+        }
+    )
+    def post(self, request, fooditem_id):
+        """
+        Create a new SpecialOffer for a given food item.
+
+        Args:
+            fooditem_id (UUID): The UUID of the food item.
+
+        Returns:
+            Response: A JSON response with the newly created special offer or validation errors.
+        """
+        fooditem = get_object_or_404(FoodItem, id=fooditem_id, is_available=True)
+        
+        if SpecialOffer.objects.filter(fooditem=fooditem).exists():
+            logger.warning("SpecialOffer already exists for FoodItem id %s.", fooditem_id)
+            return Response({"detail": "SpecialOffer for this FoodItem already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = SpecialOfferSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(fooditem=fooditem)
+            logger.info("SpecialOffer created successfully for FoodItem id %s.", fooditem_id)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        logger.error("Failed to create SpecialOffer: %s", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SpecialOfferDetailAPIView(APIView):
+    """
+    API view to handle retrieving, updating, and deleting a specific SpecialOffer.
+
+    Methods:
+        - get: Retrieve a specific SpecialOffer by ID.
+        - put: Update all fields of a specific SpecialOffer.
+        - delete: Delete a specific SpecialOffer.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get_object(self, offer_id):
+        """
+        Helper method to retrieve a SpecialOffer by its ID, handling the case where it does not exist.
+
+        Args:
+            offer_id (UUID): The UUID of the special offer.
+
+        Returns:
+            SpecialOffer: The requested SpecialOffer object or None if not found.
+        """
+        return get_object_or_404(SpecialOffer, id=offer_id)
+
+    @extend_schema(
+        summary="Retrieve a specific SpecialOffer by ID",
+        description="Retrieve the details of a specific SpecialOffer using its UUID.",
+        responses={
+            200: SpecialOfferSerializer,
+            404: OpenApiExample(
+                "SpecialOffer not found",
+                value={"detail": "SpecialOffer not found."},
+            ),
+        }
+    )
+    def get(self, request, offer_id, format=None):
+        """
+        Retrieve a specific SpecialOffer by ID.
+
+        Args:
+            offer_id (UUID): The UUID of the special offer.
+
+        Returns:
+            Response: A JSON response with the special offer details or 404 if not found.
+        """
+        special_offer = self.get_object(offer_id)
+        serializer = SpecialOfferSerializer(special_offer)
+        logger.info("Retrieved SpecialOffer id %s.", offer_id)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Update a specific SpecialOffer",
+        description="Update all fields of a specific SpecialOffer using its UUID.",
+        request=SpecialOfferSerializer,
+        responses={
+            200: SpecialOfferSerializer,
+            400: OpenApiExample(
+                "Validation errors during update",
+                value={"detail": "Invalid data."},
+            ),
+            404: OpenApiExample(
+                "SpecialOffer not found",
+                value={"detail": "SpecialOffer not found."},
+            ),
+        }
+    )
+    def put(self, request, offer_id, format=None):
+        """
+        Update all fields of a specific SpecialOffer.
+
+        Args:
+            offer_id (UUID): The UUID of the special offer.
+
+        Returns:
+            Response: A JSON response with the updated special offer details or validation errors.
+        """
+        special_offer = self.get_object(offer_id)
+        serializer = SpecialOfferSerializer(special_offer, data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            logger.info("SpecialOffer id %s updated successfully.", offer_id)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        logger.error("Failed to update SpecialOffer id %s: %s", offer_id, serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        summary="Delete a specific SpecialOffer",
+        description="Delete a specific SpecialOffer using its UUID.",
+        responses={
+            204: OpenApiExample(
+                "SpecialOffer deleted successfully",
+                value={},
+            ),
+            404: OpenApiExample(
+                "SpecialOffer not found",
+                value={"detail": "SpecialOffer not found."},
+            ),
+        }
+    )
+    def delete(self, request, offer_id, format=None):
+        """
+        Delete a specific SpecialOffer by ID.
+
+        Args:
+            offer_id (UUID): The UUID of the special offer.
+
+        Returns:
+            Response: A status 204 response on successful deletion or 404 if not found.
+        """
+        special_offer = self.get_object(offer_id)
+        special_offer.delete()
+        logger.info("SpecialOffer id %s deleted successfully.", offer_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
