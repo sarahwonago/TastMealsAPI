@@ -9,7 +9,6 @@ urlpatterns = [
     # home
     path("", CafeadminHomeAPIView.as_view(), name="cafeadmin-home"),
     
-
     # admin viewing reviews made by customers
     path("customer-reviews/", ReviewsAPIView.as_view(), name="reviews"),
 

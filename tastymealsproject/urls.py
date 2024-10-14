@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/cafeadmin/', include('cafeadminend.urls')),
     path("api/account/", include('account.urls')),
     path("api/menu/", include('menu.urls')),
+    path("api/cart/", include('cart.urls')),
 ]
 
 if settings.DEBUG:

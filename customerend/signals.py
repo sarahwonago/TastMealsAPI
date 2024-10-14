@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import CartItem, Cart, Order, CustomerLoyaltyPoint
+from .models import Order, CustomerLoyaltyPoint
+from cart.models import CartItem, Cart
 
 from cafeadminend.models import Notification, RedemptionOption
 

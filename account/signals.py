@@ -2,7 +2,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
 
-from customerend.models import Cart, CustomerLoyaltyPoint
+from customerend.models import CustomerLoyaltyPoint
+from cart.models import Cart
 
 import logging
 

@@ -2,8 +2,7 @@ from django.urls import path
 
 from .views import (
     CustomerHomeAPIView, CategoryListAPIView, CategoryDetailAPIView, FoodItemListAPIView,
-    DiningTableListAPIView, SpecialOfferListAPIView, AddItemToCartAPIView, CartAPIView,
-    CartItemDetailAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
+    DiningTableListAPIView, SpecialOfferListAPIView, PlaceOrderView, OrderListView, CancelOrderView, PaymentView,
     AddReviewView, UpdateReviewView, UserReviewsView, DeleteReviewView, NotificationListView, 
     NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView, RedeemLoyaltyPointsAPIView, RedemptionOptionListView
 )
@@ -25,13 +24,6 @@ urlpatterns = [
 
     # specialoffer endpoint
     path("specialoffers/", SpecialOfferListAPIView.as_view(), name="customer-specialoffers-list"),
-
-    # Adding items to cart, viewing cart
-    path("add-to-cart/<uuid:fooditem_id>/", AddItemToCartAPIView.as_view(), name="customer-add-to-cart"),
-    path("my-cart/", CartAPIView.as_view(), name="customer-cart"),
-
-    # Update/Delete specific cart item (using cartitem_id in the URL)
-    path('my-cart/<uuid:cartitem_id>/', CartItemDetailAPIView.as_view(), name='customer-cart-item-detail'),
 
     # placing an order endpoint, listing all orders, cancelling unpaid orders
     path('my-cart/place-order/', PlaceOrderView.as_view(), name='customer-place-order'),
