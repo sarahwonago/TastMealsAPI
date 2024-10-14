@@ -5,9 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
 from django.db.models import Q
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiExample
@@ -18,8 +15,9 @@ from menu.models import Category, FoodItem, SpecialOffer, DiningTable
 from cafeadminend.serializers import (NotificationSerializer, RedemptionOptionSerializer)
 
 from menu.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
-from .serializers import OrderSerializer, ReviewSerializer, CustomerLoyaltyPointSerializer
-from .models import Order, Review, CustomerLoyaltyPoint
+from .serializers import ReviewSerializer, CustomerLoyaltyPointSerializer
+from .models import Review, CustomerLoyaltyPoint
+from order.models import Order
 
 from account.permissions import IsCustomer
 
@@ -253,110 +251,6 @@ class SpecialOfferListAPIView(APIView):
         serializer = SpecialOfferSerializer(special_offers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-class PlaceOrderView(APIView):
-    """
-    Handles creating an order.
-    """
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def post(self, request, *args, **kwargs):
-        """
-        Endpoint for placing an order from the user's cart.
-        """
-        user = request.user
-        # fetching users cartitems
-        cart = user.cart
-        cart_items = cart.cartitems.all()
-        
-        if not cart_items.exists():
-            return Response({"message":"The cart is empty, no items to place in the order."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Calculate total price from the users cart
-        total_price = cart.total_price
-
-        # Create the order
-        order = Order.objects.create(
-            user=user,
-            total_price=total_price
-        )
-        
-        # Add cart items to the order
-        order.order_items.set(cart_items)
-        order.save()
-        
-        # Clear the user's cart after the order is placed
-        cart.cartitems.all().delete()
-        cart.save()
-
-        return Response({
-            "message": "Order placed successfully.",
-            "order_id": order.id
-        }, status=status.HTTP_201_CREATED)
-        
-
-class OrderListView(APIView):
-    """
-    API view to retrieve a list of orders for the authenticated user,
-    with filtering, ordering, and searching capabilities.
-    """
-
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def get(self, request):
-        """
-        Retrieve a list of orders for the authenticated user.
-        Allows filtering, searching, and ordering.
-        """
-        # Fetch the orders for the authenticated user
-        orders = Order.objects.filter(user=request.user)
-
-        # Filtering
-        status_param = request.query_params.get('status', None)
-
-        if status_param:
-            orders = orders.filter(status=status_param)
-
-        # Searching
-        search_param = request.query_params.get('search', None)
-        if search_param:
-            orders = orders.filter(status__icontains=search_param)
-
-        # Ordering
-        ordering_param = request.query_params.get('ordering', '-updated_at')
-        orders = orders.order_by(ordering_param)
-
-        # Serialize the orders
-        serializer = OrderSerializer(orders, many=True)
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
-        
-
-class CancelOrderView(APIView):
-    """
-    API view to cancel an existing unpaid order.
-    """
-
-    permission_classes = [IsAuthenticated, IsCustomer]
-
-    def post(self, request, order_id):
-        """
-        Cancel an unpaid order by ID for the authenticated user.
-        """
-        try:
-            # Fetch the order
-            order = Order.objects.get(id=order_id, user=request.user, is_paid=False)
-
-            # delete the order
-            order.delete()
-            return Response({"detail": "Order cancelled successfully."}, status=status.HTTP_200_OK)
-
-        except Order.DoesNotExist:
-            return Response(
-                {"detail": "Order not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
 
 
 class PaymentView(APIView):

@@ -43,8 +43,12 @@ INSTALLED_APPS = [
     "account.apps.AccountConfig",
     "customerend.apps.CustomerendConfig",
     "cafeadminend.apps.CafeadminendConfig",
+    #menu management
     "menu.apps.MenuConfig",
+    #cart management
     "cart.apps.CartConfig",
+    #order management
+    "order.apps.OrderConfig",
 ]
 
 AUTH_USER_MODEL = "account.CustomUser"
