@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from cart.models import CartItem
 from order.models import Order
 
-from cafeadminend.models import Notification
+from notification.models import Notification
 
 from .myutils import award_customer_points
 

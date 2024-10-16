@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (
     CustomerHomeAPIView, CategoryListAPIView, CategoryDetailAPIView, FoodItemListAPIView,
     DiningTableListAPIView, SpecialOfferListAPIView,NotificationListView, 
-    NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView, CustomerLoyaltyPointView, RedeemLoyaltyPointsAPIView, RedemptionOptionListView
+    NotificationDetailView, BulkMarkAsReadView, CustomerLoyaltyPointView, RedeemLoyaltyPointsAPIView, RedemptionOptionListView
 )
 
 
@@ -29,7 +29,6 @@ urlpatterns = [
 
     # Mark as read, bulk delete
     path('notifications/mark-as-read/', BulkMarkAsReadView.as_view(), name='customer-bulk-mark-as-read'),
-    path('notifications/delete/', BulkDeleteNotificationsView.as_view(), name='customer-bulk-delete-notifications'),
 
     # View a single notification and mark it as read
     path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='customer-notification-detail'),

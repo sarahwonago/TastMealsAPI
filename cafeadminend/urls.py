@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkDeleteNotificationsView, BulkMarkAsReadView,
+from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkMarkAsReadView,
                     RedemptionOptionDetailView,RedemptionOptionListCreateView,RedemptionTransactionDetailView, RedemptionTransactionListView, MarkRedemptionTransactionDeliveredView
                    )
 
@@ -17,7 +17,7 @@ urlpatterns = [
 
     # Mark as read, bulk delete
     path('notifications/mark-as-read/', BulkMarkAsReadView.as_view(), name='bulk-mark-as-read'),
-    path('notifications/delete/', BulkDeleteNotificationsView.as_view(), name='bulk-delete-notifications'),
+
 
     # View a single notification and mark it as read
     path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='notification-detail'),

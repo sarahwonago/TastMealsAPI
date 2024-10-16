@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "payment.apps.PaymentConfig",
     #review management
     "review.apps.ReviewConfig",
+    # notification management
+    "notification.apps.NotificationConfig",
     
 ]
 
