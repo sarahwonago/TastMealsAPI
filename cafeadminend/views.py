@@ -296,19 +296,17 @@ class AdminAnalyticsView(APIView):
         """
 
         # Total Orders
-        total_orders = Order.objects.filter(is_paid=True).count()
+        total_paid_orders = Order.objects.filter(is_paid=True).count()
 
         # Total Completed Orders
         total_completed_orders = Order.objects.filter(status='COMPLETE').count()
 
-        # Total Revenue (Assuming there's a 'total_price' field in the Order model)
+        # Total Revenue earned
         total_revenue = Order.objects.filter(status='COMPLETE').aggregate(total_revenue=Sum('total_price'))['total_revenue'] or 0
 
         # Orders by Status
         orders_by_status = Order.objects.values('status').annotate(count=Count('status'))
 
-        # # Top Food Items (most ordered)
-        # top_food_items = Order.objects.values('items__fooditem__name').annotate(count=Count('items__fooditem')).order_by('-count')[:5]
 
         # Total Redeemed Points
         total_redeemed_points = RedemptionTransaction.objects.aggregate(points_redeemed=Sum('points_redeemed'))['points_redeemed'] or 0
@@ -325,7 +323,7 @@ class AdminAnalyticsView(APIView):
 
 
         analytics_data = {
-            "total_orders": total_orders,
+            "total_paid_orders": total_paid_orders,
             "total_completed_orders": total_completed_orders,
             "total_revenue": total_revenue,
             "orders_by_status": orders_by_status,
