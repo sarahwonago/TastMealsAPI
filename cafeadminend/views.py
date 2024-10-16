@@ -3,22 +3,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import ValidationError
 from django.db.models import Q
 from rest_framework import status
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample, inline_serializer
 
 from account.permissions import IsAdmin
-from .models import RedemptionOption, RedemptionTransaction
-from .serializers import RedemptionOptionSerializer, RedemptionTransactionSerializer
 
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
 
 from review.models import Review
 from review.serializers import ReviewSerializer
-from menu.models import FoodItem
+
 
 # sets up logging for this module
 logger = logging.getLogger(__name__)
@@ -200,166 +197,3 @@ class BulkMarkAsReadView(APIView):
         logger.info(f"Marked notifications {notification_ids} as read for user {user.username}.")
         return Response({"detail": "Notifications marked as read."}, status=status.HTTP_200_OK)
 
-class RedemptionOptionListCreateView(APIView):
-    """
-    Handles the creation and listing of RedemptionOptions using APIView.
-    """
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get(self, request, *args, **kwargs):
-        """
-        Fetches all redemption options.
-        """
-        options = RedemptionOption.objects.all()
-        
-        # Filtering, Searching, Ordering
-        points_required = request.query_params.get('points_required', None)
-        search_query = request.query_params.get('search', None)
-        ordering = request.query_params.get('ordering', None)
-
-        if points_required:
-            options = options.filter(points_required=points_required)
-        if search_query:
-            options = options.filter(fooditem__name__icontains=search_query) | options.filter(description__icontains=search_query)
-        if ordering:
-            options = options.order_by(ordering)
-
-        serializer = RedemptionOptionSerializer(options, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        serializer = RedemptionOptionSerializer(data=request.data)
-
-        fooditem_id = request.data.get('fooditem_id')
-
-        fooditem = get_object_or_404(FoodItem, id=fooditem_id)
-
-        # checks if the redemption option with passed fooditem exists
-        # fix this 
-        # try:
-            
-        #     redemption_option = get_object_or_404(RedemptionOption, fooditem=fooditem)
-        #     return Response({"detail":"A redemption option with that fooditem already exists."}, status=status.HTTP_400_BAD_REQUEST)
-        # except RedemptionOption.DoesNotExist:
-        #     pass
-
-        redemption_option = RedemptionOption.objects.filter(fooditem=fooditem)
-
-        # checks if the redemption option with passed fooditem exists
-        if redemption_option:
-            return Response({"detail":"A redemption option with that fooditem already exists."}, status=status.HTTP_400_BAD_REQUEST)
-            
-        if serializer.is_valid():
-            serializer.save(fooditem=fooditem)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class RedemptionOptionDetailView(APIView):
-    """
-    Handles the retrieval, update, and deletion of a single RedemptionOption using APIView.
-    """
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get_object(self, pk):
-        try:
-            return RedemptionOption.objects.get(pk=pk)
-        except RedemptionOption.DoesNotExist:
-            raise ValidationError("Redemption Option not found")
-
-    def get(self, request, pk, *args, **kwargs):
-        option = self.get_object(pk)
-        serializer = RedemptionOptionSerializer(option)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk, *args, **kwargs):
-        option = self.get_object(pk)
-        serializer = RedemptionOptionSerializer(option, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk, *args, **kwargs):
-        option = self.get_object(pk)
-        option.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-            
-
-
-class RedemptionTransactionListView(APIView):
-    """
-    Handles the listing of RedemptionTransactions using APIView.
-    """
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get(self, request, *args, **kwargs):
-        transactions = RedemptionTransaction.objects.all()
-        
-        # Filtering, Searching, Ordering
-        status_filter = request.query_params.get('status', None)
-        search_query = request.query_params.get('search', None)
-        ordering = request.query_params.get('ordering', None)
-
-        if status_filter:
-            transactions = transactions.filter(status=status_filter)
-        if search_query:
-            transactions = transactions.filter(redemption_option__fooditem__name__icontains=search_query)
-        if ordering:
-            transactions = transactions.order_by(ordering)
-
-        serializer = RedemptionTransactionSerializer(transactions, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
-class RedemptionTransactionDetailView(APIView):
-    """
-    Handles retrieval, update, and deletion of RedemptionTransaction.
-    """
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get_object(self, pk):
-        try:
-            return RedemptionTransaction.objects.get(pk=pk)
-        except RedemptionTransaction.DoesNotExist:
-            raise ValidationError("Transaction not found")
-
-    def get(self, request, pk, *args, **kwargs):
-        transaction = self.get_object(pk)
-        serializer = RedemptionTransactionSerializer(transaction)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-    def delete(self, request, pk, *args, **kwargs):
-        transaction = self.get_object(pk)
-        
-        if transaction.status == 'DELIVERED':
-            transaction.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response({"message":"You cannot delete if not delivered"}, status=status.HTTP_400_BAD_REQUEST)
-        
-    
-
-class MarkRedemptionTransactionDeliveredView(APIView):
-    """
-    Handles marking a RedemptionTransaction as delivered.
-    """
-    permission_classes = [IsAuthenticated, IsAdmin]
-
-    def get_object(self, pk):
-        try:
-            return RedemptionTransaction.objects.get(pk=pk)
-        except RedemptionTransaction.DoesNotExist:
-            raise ValidationError("Transaction not found")
-
-    def patch(self, request, pk, *args, **kwargs):
-
-        #fix this, send the status in the body
-        transaction = self.get_object(pk)
-        transaction.status = 'DELIVERED'
-        transaction.save()
-        serializer = RedemptionTransactionSerializer(transaction)
-    
-        return Response(serializer.data, status=status.HTTP_200_OK)
-       

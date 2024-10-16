@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     "review.apps.ReviewConfig",
     # notification management
     "notification.apps.NotificationConfig",
+    # rewards management
+    "rewards.apps.RewardsConfig",
     
 ]
 

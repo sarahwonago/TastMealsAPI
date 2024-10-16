@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import RedemptionOption, RedemptionTransaction
 
 
-
 class RedemptionOptionSerializer(serializers.ModelSerializer):
     """
     Serializer for RedemptionOption.

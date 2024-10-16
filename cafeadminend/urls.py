@@ -1,7 +1,6 @@
 from django.urls import path
 
-from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkMarkAsReadView,
-                    RedemptionOptionDetailView,RedemptionOptionListCreateView,RedemptionTransactionDetailView, RedemptionTransactionListView, MarkRedemptionTransactionDeliveredView
+from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkMarkAsReadView
                    )
 
 
@@ -21,15 +20,5 @@ urlpatterns = [
 
     # View a single notification and mark it as read
     path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
-
-    # redemption option endpoints
-    path('redemption-options/', RedemptionOptionListCreateView.as_view(), name='redemption-options'),
-    path('redemption-options/<uuid:pk>/', RedemptionOptionDetailView.as_view(), name='redemption-option-detail'),
-
-    # redemption option transaction endpoints
-    path('redemption-transactions/', RedemptionTransactionListView.as_view(), name='redemption-transactions'),
-    path('redemption-transactions/<uuid:pk>/', RedemptionTransactionDetailView.as_view(), name='redemption-transaction-detail'),
-    path('redemption-transactions/<uuid:pk>/mark-delivered/', MarkRedemptionTransactionDeliveredView.as_view(), name='redemption-transaction-delivered'),
-
 ]
 

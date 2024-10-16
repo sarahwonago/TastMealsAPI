@@ -10,9 +10,9 @@ from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiExample, OpenApiResponse, inline_serializer
 
 from rest_framework import serializers
-from cafeadminend.models import  RedemptionOption, RedemptionTransaction
+from rewards.models import  RedemptionOption, RedemptionTransaction
 from menu.models import Category, FoodItem, SpecialOffer, DiningTable
-from cafeadminend.serializers import RedemptionOptionSerializer
+from rewards.serializers import RedemptionOptionSerializer
 
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
@@ -402,80 +402,141 @@ class BulkMarkAsReadView(APIView):
         notifications.update(is_read=True)
         logger.info(f"Marked notifications {notification_ids} as read for user {user.username}.")
         return Response({"detail": "Notifications marked as read."}, status=status.HTTP_200_OK)
-
+    
 class CustomerLoyaltyPointView(APIView):
     """
     Endpoint to view customer loyalty points.
+    
+    Responses:
+    - 200: Success, returns the customer's loyalty points.
+    - 404: Customer loyalty points not found.
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
+    @extend_schema(
+        responses={
+            200: CustomerLoyaltyPointSerializer,
+            404: OpenApiResponse(description="Loyalty points not found.")
+        }
+    )
     def get(self, request):
         try:
             customer_points = CustomerLoyaltyPoint.objects.get(user=request.user)
             serializer = CustomerLoyaltyPointSerializer(customer_points)
+            logger.info(f"Loyalty points retrieved for user {request.user.username}.")
             return Response(serializer.data, status=status.HTTP_200_OK)
         except CustomerLoyaltyPoint.DoesNotExist:
+            logger.error(f"Loyalty points not found for user {request.user.username}.")
             return Response({"detail": "Loyalty points not found."}, status=status.HTTP_404_NOT_FOUND)
-        
+
+
 class RedemptionOptionListView(APIView):
     """
-    Handles the creation and listing of RedemptionOptions using APIView.
+    API View to list all available redemption options with filtering, searching, and ordering.
+    
+    Query Parameters:
+    - points_required (int, optional): Filter redemption options by points required.
+    - search (str, optional): Search redemption options by food item name or description.
+    - ordering (str, optional): Order by any field, default is by creation date.
+
+    Responses:
+    - 200: Success, list of redemption options.
+    - 400: Invalid query parameters.
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='points_required', description='Filter by points required', required=False, type=int),
+            OpenApiParameter(name='search', description='Search by food item or description', required=False, type=str),
+            OpenApiParameter(name='ordering', description='Order by field, e.g., "points_required"', required=False, type=str)
+        ],
+        responses={
+            200: RedemptionOptionSerializer(many=True),
+            400: OpenApiResponse(description="Invalid query parameters.")
+        }
+    )
     def get(self, request, *args, **kwargs):
         """
-        Fetches all redemption options.
+        Fetch all redemption options with filtering, searching, and ordering.
         """
         options = RedemptionOption.objects.all()
-        
-        # Filtering, Searching, Ordering
-        points_required = request.query_params.get('points_required', None)
-        search_query = request.query_params.get('search', None)
-        ordering = request.query_params.get('ordering', None)
+        print(options)
 
+        # Filtering by points required
+        points_required = request.query_params.get('points_required', None)
         if points_required:
             options = options.filter(points_required=points_required)
+
+        # Searching by food item name or description
+        search_query = request.query_params.get('search', None)
         if search_query:
-            options = options.filter(fooditem__name__icontains=search_query) | options.filter(description__icontains=search_query)
-        if ordering:
-            options = options.order_by(ordering)
+            options = options.filter(Q(fooditem__name__icontains=search_query) | Q(description__icontains=search_query))
+
+        # Ordering options (default is by most recent)
+        ordering = request.query_params.get('ordering', 'points_required')
+        options = options.order_by(ordering)
 
         serializer = RedemptionOptionSerializer(options, many=True)
+        logger.info(f"Listed redemption options for user {request.user.username}.")
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class RedeemLoyaltyPointsAPIView(APIView):
     """
-    Endpoint to redeem customer loyalty points.
+    Endpoint to redeem customer loyalty points for a redemption option.
+
+    URL Parameters:
+    - redemption_id (int): The ID of the redemption option to redeem points for.
+
+    Request Body:
+    - Empty body.
+
+    Responses:
+    - 201: Success, points redeemed.
+    - 400: Not enough points or invalid request.
+    - 404: Redemption option not found.
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
-    def post(self, request,redemption_id, *args, **kwargs):
-        redemption_option = RedemptionOption.objects.get(id=redemption_id)
+    @extend_schema(
+        responses={
+            201: OpenApiResponse(description="Successfully redeemed points."),
+            400: OpenApiResponse(description="Not enough points or invalid request."),
+            404: OpenApiResponse(description="Redemption option not found.")
+        }
+    )
+    def post(self, request, redemption_id, *args, **kwargs):
+        try:
+            redemption_option = RedemptionOption.objects.get(id=redemption_id)
+        except RedemptionOption.DoesNotExist:
+            logger.error(f"Redemption option {redemption_id} not found for user {request.user.username}.")
+            return Response({"detail": "Redemption option not found."}, status=status.HTTP_404_NOT_FOUND)
+
         points_required = redemption_option.points_required
         user = request.user
 
-        # Check if user has enough points
+        # Check if user has enough loyalty points
         if user.customerloyaltypoint.points < points_required:
-            return Response({"message":"You don't have enough points to redeem this option."},status=status.HTTP_400_BAD_REQUEST)
+            logger.warning(f"User {user.username} tried to redeem but doesn't have enough points.")
+            return Response({"message": "You don't have enough points to redeem this option."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Deduct points
+        # Deduct loyalty points
         user.customerloyaltypoint.points -= points_required
         user.customerloyaltypoint.save()
 
-        # Create Redemption Transaction
-        transaction = RedemptionTransaction.objects.create(
+        # Create redemption transaction
+        RedemptionTransaction.objects.create(
             customer=user,
             redemption_option=redemption_option,
             points_redeemed=points_required,
         )
 
-        # send notification to user
+        # Send notification to user
         Notification.objects.create(
             user=user,
-            message=f"You have redeemed {points_required} for {redemption_option.fooditem}. Go pick it up at the counter",
-
+            message=f"You have redeemed {points_required} points for {redemption_option.fooditem}. Pick it up at the counter."
         )
-        
-        
-        return Response({"message":f"Successfully redeemed {points_required}. points"}, status=status.HTTP_201_CREATED)
+        logger.info(f"User {user.username} redeemed {points_required} points for {redemption_option.fooditem}.")
+
+        return Response({"message": f"Successfully redeemed {points_required} points."}, status=status.HTTP_201_CREATED)
