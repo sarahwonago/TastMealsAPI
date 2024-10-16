@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 User = get_user_model()
-from menu.models import DiningTable
+from dinning.models import DiningTable
 from cart.models import CartItem
 
 class Order(models.Model):

@@ -11,15 +11,18 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema, OpenApiExampl
 
 from rest_framework import serializers
 from rewards.models import  RedemptionOption, RedemptionTransaction
-from menu.models import Category, FoodItem, SpecialOffer, DiningTable
+from menu.models import Category, FoodItem, SpecialOffer
 from rewards.serializers import RedemptionOptionSerializer
 
 from notification.models import Notification
 from notification.serializers import NotificationSerializer
 
-from menu.serializers import (CategorySerializer, DiningTableSerializer, FoodItemSerializer, SpecialOfferSerializer)
+from menu.serializers import (CategorySerializer, FoodItemSerializer, SpecialOfferSerializer)
 from .serializers import CustomerLoyaltyPointSerializer
 from .models import CustomerLoyaltyPoint
+
+from dinning.models import DiningTable
+from dinning.serializers import DiningTableSerializer
 
 from account.permissions import IsCustomer
 

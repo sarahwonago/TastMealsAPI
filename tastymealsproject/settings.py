@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "notification.apps.NotificationConfig",
     # rewards management
     "rewards.apps.RewardsConfig",
+    # dinning management
+    "dinning.apps.DinningConfig",
     
 ]
 

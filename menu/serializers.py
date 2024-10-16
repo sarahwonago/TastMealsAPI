@@ -1,7 +1,5 @@
 from rest_framework import serializers
-from .models import Category, DiningTable, FoodItem, SpecialOffer
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_field
+from .models import Category, FoodItem, SpecialOffer
 
 class CategorySerializer(serializers.ModelSerializer):
     """
@@ -17,17 +15,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'description']
-        read_only_fields = ['id']
-
-
-class DiningTableSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the DiningTable model.
-    Serializes the DinningTable model fields to JSON format.
-    """
-    class Meta:
-        model = DiningTable
-        fields = ['id', 'table_number']
         read_only_fields = ['id']
 
 

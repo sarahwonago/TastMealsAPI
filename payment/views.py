@@ -11,7 +11,7 @@ from rest_framework import serializers
 
 from order.models import Order
 from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_serializer
-from menu.models import DiningTable
+from dinning.models import DiningTable
 
 from account.permissions import IsCustomer
 

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (CategoryListCreateAPIView, CategoryDetailAPIView, DiningTableListAPIView, DiningTableDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView,)
+from .views import (CategoryListCreateAPIView, CategoryDetailAPIView, FoodItemListView, FoodItemDetailView,SpecialOfferCreateAPIView, SpecialOfferDetailAPIView, SpecialOfferListAPIView,)
 
 
 urlpatterns = [
@@ -8,10 +8,6 @@ urlpatterns = [
     # endpoint for managing categories
     path("categories/", CategoryListCreateAPIView.as_view(), name="categories-list-create"),
     path("categories/<uuid:pk>/", CategoryDetailAPIView.as_view(), name="category-detail"),
-    
-     # endpoint for managing dinning tables
-    path("dinning-tables/", DiningTableListAPIView.as_view(), name="dinning-list-create"),
-    path("dinning-tables/<uuid:pk>/", DiningTableDetailAPIView.as_view(), name="dinning-detail"),
 
     # endpoint for managing fooditems under specific categories
     path('categories/<uuid:category_id>/fooditems/', FoodItemListView.as_view(), name='fooditem-list'),
