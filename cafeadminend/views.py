@@ -7,6 +7,7 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample, inline_serializer
+from drf_spectacular.types import OpenApiTypes
 
 from account.permissions import IsAdmin
 
@@ -15,6 +16,14 @@ from notification.serializers import NotificationSerializer
 
 from review.models import Review
 from review.serializers import ReviewSerializer
+
+from order.models import Order
+from order.serializers import OrderSerializer
+
+from datetime import timedelta
+from django.utils.timezone import now
+from django.db.models import Count, Sum
+from rewards.models import RedemptionTransaction
 
 
 # sets up logging for this module
@@ -197,3 +206,133 @@ class BulkMarkAsReadView(APIView):
         logger.info(f"Marked notifications {notification_ids} as read for user {user.username}.")
         return Response({"detail": "Notifications marked as read."}, status=status.HTTP_200_OK)
 
+
+class CafeAdminOrderListView(APIView):
+    """
+    Handles the listing of all orders for cafe admin with filtering, searching, and ordering.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='status', description='Filter by order status', required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name='search', description='Search by customer name', required=False, type=OpenApiTypes.STR),
+            OpenApiParameter(name='ordering', description='Order by a specific field like created_at', required=False, type=OpenApiTypes.STR)
+        ],
+        responses={200: OrderSerializer(many=True)},
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Fetch all orders with optional filtering, search, and ordering.
+        """
+        orders = Order.objects.filter(is_paid=True)
+
+        # Filtering by status
+        status_filter = request.query_params.get('status', None)
+        if status_filter:
+            orders = orders.filter(status=status_filter)
+
+        # Searching by customer name 
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            orders = orders.filter(
+                Q(user__username__icontains=search_query) 
+            ).distinct()
+
+        # Ordering by fields (default by creation date descending)
+        ordering = request.query_params.get('ordering', '-created_at')
+        orders = orders.order_by(ordering)
+
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MarkOrderCompleteAPIView(APIView):
+    """
+    Endpoint for cafe admin to mark an order as complete.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Order marked as complete."),
+            404: OpenApiResponse(description="Order not found.")
+        }
+    )
+    def patch(self, request, order_id, *args, **kwargs):
+        """
+        Marks a specific order as complete.
+        """
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({"detail": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if order.status == 'COMPLETE':
+            return Response({"detail": "Order is already marked as complete."}, status=status.HTTP_400_BAD_REQUEST)
+
+        order.status = 'COMPLETE'
+        order.save()
+
+        return Response({"detail": "Order marked as complete."}, status=status.HTTP_200_OK)
+    
+
+
+class AdminAnalyticsView(APIView):
+    """
+    Endpoint to provide analytics for the admin.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Analytics data retrieved successfully."),
+            400: OpenApiResponse(description="Error in retrieving analytics data.")
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Get analytics data for the admin.
+        """
+
+        # Total Orders
+        total_orders = Order.objects.filter(is_paid=True).count()
+
+        # Total Completed Orders
+        total_completed_orders = Order.objects.filter(status='COMPLETE').count()
+
+        # Total Revenue (Assuming there's a 'total_price' field in the Order model)
+        total_revenue = Order.objects.filter(status='COMPLETE').aggregate(total_revenue=Sum('total_price'))['total_revenue'] or 0
+
+        # Orders by Status
+        orders_by_status = Order.objects.values('status').annotate(count=Count('status'))
+
+        # # Top Food Items (most ordered)
+        # top_food_items = Order.objects.values('items__fooditem__name').annotate(count=Count('items__fooditem')).order_by('-count')[:5]
+
+        # Total Redeemed Points
+        total_redeemed_points = RedemptionTransaction.objects.aggregate(points_redeemed=Sum('points_redeemed'))['points_redeemed'] or 0
+
+        # Orders in the Last 7 Days (can adjust for other time periods)
+        today = now().date()
+        last_7_days = today - timedelta(days=7)
+        orders_last_7_days = Order.objects.filter(created_at__date__gte=last_7_days, is_paid=True).count()
+
+        # Orders by Day (for the last 7 days)
+        orders_by_day = Order.objects.filter(created_at__date__gte=last_7_days, is_paid=True).extra({'day': "DATE(created_at)"}).values('day').annotate(count=Count('id')).order_by('day')
+
+        todays_total_revenue = Order.objects.filter(status='COMPLETE', is_paid=True,updated_at__date__gte=today).aggregate(total_revenue=Sum('total_price'))['total_revenue'] or 0
+
+
+        analytics_data = {
+            "total_orders": total_orders,
+            "total_completed_orders": total_completed_orders,
+            "total_revenue": total_revenue,
+            "orders_by_status": orders_by_status,
+            "total_redeemed_points": total_redeemed_points,
+            "orders_last_7_days": orders_last_7_days,
+            "orders_by_day": orders_by_day,
+            "todays_total_revenue": todays_total_revenue
+        }
+
+        return Response(analytics_data, status=status.HTTP_200_OK)

@@ -1,6 +1,7 @@
 from django.urls import path
 
-from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkMarkAsReadView
+from .views import (CafeadminHomeAPIView, ReviewsAPIView, NotificationListView, NotificationDetailView, BulkMarkAsReadView, CafeAdminOrderListView, MarkOrderCompleteAPIView,
+                    AdminAnalyticsView
                    )
 
 
@@ -20,5 +21,12 @@ urlpatterns = [
 
     # View a single notification and mark it as read
     path('notifications/<uuid:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
+
+    # List orders, filtering, searching, ordering
+    path('orders/', CafeAdminOrderListView.as_view(), name='orders-list'),
+    path('orders/<uuid:order_id>/complete/', MarkOrderCompleteAPIView.as_view(), name='mark-order-complete'),
+
+    # Admin analytics
+    path('analytics/', AdminAnalyticsView.as_view(), name='admin-analytics'),
 ]
 
