@@ -7,9 +7,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     """
     Serializer for the Review model.
     """
+    user = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Review
-        fields = ['id', 'user', 'order', 'rating', 'comment', 'created_at']
-        read_only_fields = ['id', 'user', 'created_at', 'order']
+        fields = ['id', 'user',  'rating', 'comment']
+        read_only_fields = ['id', 'user']
     
 
