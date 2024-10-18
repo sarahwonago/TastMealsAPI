@@ -32,6 +32,7 @@ class AddItemToCartAPIView(APIView):
     """
     permission_classes = [IsAuthenticated, IsCustomer]
 
+
     @extend_schema(
         request=inline_serializer('CartItemAddRequest', fields={
             'quantity': serializers.IntegerField(default=1, help_text="Quantity of the item to be added to the cart")
