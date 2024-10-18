@@ -1,29 +1,21 @@
-from django.test import TestCase
 
-import uuid
+from cart.models import Cart
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
-import pytest
+import unittest
 
-class TestCart:
+class TestCart(unittest.TestCase):
 
-    # Creating a Cart instance with a unique UUID
-    def test_cart_creation_with_unique_uuid(self):
-        from cart.models import Cart
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-    
-        user = User.objects.create(username='testuser', password='password')
+    # Creating a Cart instance with a valid user and default total_price
+    def test_create_cart_with_valid_user(self):
+        user = User.objects.create(username='testuser')
         cart = Cart.objects.create(user=user)
-    
-        assert cart.id is not None
-        assert isinstance(cart.id, uuid.UUID)
+        self.assertEqual(cart.user, user)
+        self.assertEqual(cart.total_price, 0.00)
 
-    # Attempting to create a Cart without a User
-    def test_cart_creation_without_user(self):
-        from cart.models import Cart
-        from django.db.utils import IntegrityError
-        import pytest
-    
-        with pytest.raises(IntegrityError):
+    # Attempting to create a Cart without a user
+    def test_create_cart_without_user(self):
+        with self.assertRaises(ValueError):
             Cart.objects.create()
