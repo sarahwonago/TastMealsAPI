@@ -51,16 +51,17 @@ class CategoryListCreateAPIView(APIView):
         responses={
             200: CategorySerializer(many=True),
             404: OpenApiExample("No categories found.", response_only=True, value={"detail": "No categories found."})
-        }
+        },
+        summary="list all food categories"
     )
     def get(self, request, *args, **kwargs):
         """
         **GET**:Retrieves a list of categories with optional filtering, searching, and ordering.
 
         URL Parameters:
-            name (str): Filter by category name.?name=fruits
-            search (str): Search categories by name or description.?search=fruit
-            ordering (str): Order by specified field, default is created_at.?ordering=-created_at
+            `name` (str): Filter by category name.?name=fruits
+            `search` (str): Search categories by name or description.?search=fruit
+            `ordering` (str): Order by specified field, default is created_at.?ordering=-created_at
 
         Returns:
             Response (JSON): List of categories.
@@ -101,7 +102,8 @@ class CategoryListCreateAPIView(APIView):
         responses={
             201: CategorySerializer,
             400: OpenApiExample("Validation error.", response_only=True, value={"name": "Category with this name already exists."}),
-        }
+        },
+        summary="creates a new category"
     )
     def post(self, request, *args, **kwargs):
         """
@@ -171,7 +173,8 @@ class CategoryDetailAPIView(APIView):
         responses={
             200: CategorySerializer,
             404: OpenApiExample("Category not found.", response_only=True, value={"detail": "Category not found."}),
-        }
+        },
+        summary="Retrieves a category by its UUID"
     )
     def get(self, request, pk, *args, **kwargs):
         """
@@ -198,7 +201,8 @@ class CategoryDetailAPIView(APIView):
         responses={
             200: CategorySerializer,
             400: OpenApiExample("Validation error.", response_only=True, value={"detail": "Invalid data."}),
-        }
+        },
+        summary="fully updates an existing category"
     )
     def put(self, request, pk, *args, **kwargs):
         """
@@ -234,7 +238,8 @@ class CategoryDetailAPIView(APIView):
         responses={
             200: CategorySerializer,
             400: OpenApiExample("Validation error.", response_only=True, value={"detail": "Invalid data."}),
-        }
+        },
+        summary="partially updates an existing category"
     ) 
     def patch(self, request, pk, *args, **kwargs):
         """
@@ -266,7 +271,8 @@ class CategoryDetailAPIView(APIView):
         responses={
             204: OpenApiExample("Category deleted successfully.", response_only=True, value={"message": "Category deleted successfully."}),
             404: OpenApiExample("Category not found.", response_only=True, value={"detail": "Category not found."}),
-        }
+        },
+        summary="deletes a category"
     )
     def delete(self, request, pk, *args, **kwargs):
         """
