@@ -25,7 +25,6 @@ from django.utils.timezone import now
 from django.db.models import Count, Sum
 from rewards.models import RedemptionTransaction
 
-
 # sets up logging for this module
 logger = logging.getLogger(__name__)
 
@@ -49,6 +48,13 @@ class ReviewsAPIView(APIView):
     """
     permission_classes = [IsAuthenticated, IsAdmin]
 
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Reviews retrieved successfully."),
+            400: OpenApiResponse(description="Error in retrieving customer reviews.")
+        },
+        summary="Customer reviews",
+    )
     def get(self, request):
         reviews = Review.objects.all()
         serializer = ReviewSerializer(reviews, many=True)
@@ -58,14 +64,14 @@ class ReviewsAPIView(APIView):
 
 class NotificationListView(APIView):
     """
-    API view to list all notifications for the authenticated user with filtering, searching, and ordering.
+    API view to list all notifications for the cafeadmin with filtering, searching, and ordering.
 
-    Query Parameters:
-    - is_read (bool, optional): Filter notifications by read/unread status (true/false).
-    - search (str, optional): Search notifications by message content.
-    - ordering (str, optional): Order by any field, defaults to '-updated_at' (e.g., 'created_at' or '-created_at').
+    **Query Parameters:**
+    - `is_read` (bool, optional): Filter notifications by read/unread status (true/false).
+    - `search` (str, optional): Search notifications by message content.
+    - `ordering` (str, optional): Order by any field, defaults to '-updated_at' (e.g., 'created_at' or '-created_at').
 
-    Responses:
+    **Responses:**
     - 200: Success, list of notifications.
     - 400: Invalid query parameters.
     """
@@ -80,7 +86,8 @@ class NotificationListView(APIView):
         responses={
             200: NotificationSerializer(many=True),
             400: OpenApiResponse(description="Invalid query parameters.")
-        }
+        }, 
+        summary="List cafeadmin notifications",
     )
     def get(self, request):
         user = request.user
@@ -110,9 +117,9 @@ class NotificationDetailView(APIView):
     API view to retrieve a single notification and mark it as read.
 
     URL Parameters:
-    - pk (int): Primary key of the notification.
+    - `pk` (int): Primary key of the notification.
 
-    Responses:
+    **Responses:**
     - 200: Success, notification retrieved and marked as read.
     - 404: Notification not found.
     """
@@ -122,7 +129,9 @@ class NotificationDetailView(APIView):
         responses={
             200: NotificationSerializer,
             404: OpenApiResponse(description="Notification not found.")
-        }
+        },
+        summary="Retrieve a single notification",
+
     )
     def get(self, request, pk):
         notification = get_object_or_404(Notification, pk=pk, user=request.user)
@@ -140,7 +149,8 @@ class NotificationDetailView(APIView):
         responses={
             204: OpenApiResponse(description="Notification deleted."),
             404: OpenApiResponse(description="Notification not found.")
-        }
+        },
+        summary="Delete a single notification",
     )
     def delete(self, request, pk):
         """
@@ -164,9 +174,9 @@ class BulkMarkAsReadView(APIView):
     API view to mark multiple notifications as read.
 
     Request Body:
-    - notification_ids (list of int): List of notification IDs to be marked as read.
+    - `notification_ids` (list of int): List of notification IDs to be marked as read.
 
-    Responses:
+   **Responses:**
     - 200: Success, notifications marked as read.
     - 400: Invalid request body or no notification IDs provided.
     - 404: No matching notifications found.
@@ -187,7 +197,8 @@ class BulkMarkAsReadView(APIView):
             200: OpenApiResponse(description="Notifications marked as read."),
             400: OpenApiResponse(description="Invalid request body."),
             404: OpenApiResponse(description="No matching notifications found.")
-        }
+        },
+        summary="Bulk mark notifications as read",
     )
     def patch(self, request):
         notification_ids = request.data.get('notification_ids', [])
@@ -220,6 +231,7 @@ class CafeAdminOrderListView(APIView):
             OpenApiParameter(name='ordering', description='Order by a specific field like created_at', required=False, type=OpenApiTypes.STR)
         ],
         responses={200: OrderSerializer(many=True)},
+        summary="List all orders for cafe admin."
     )
     def get(self, request, *args, **kwargs):
         """
@@ -257,7 +269,8 @@ class MarkOrderCompleteAPIView(APIView):
         responses={
             200: OpenApiResponse(description="Order marked as complete."),
             404: OpenApiResponse(description="Order not found.")
-        }
+        },
+        summary="Mark an order as complete."
     )
     def patch(self, request, order_id, *args, **kwargs):
         """
@@ -288,7 +301,8 @@ class AdminAnalyticsView(APIView):
         responses={
             200: OpenApiResponse(description="Analytics data retrieved successfully."),
             400: OpenApiResponse(description="Error in retrieving analytics data.")
-        }
+        },
+        summary="Analytics data for the admin",
     )
     def get(self, request, *args, **kwargs):
         """

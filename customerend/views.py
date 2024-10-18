@@ -59,18 +59,20 @@ class CategoryListAPIView(APIView):
         responses={
             200: CategorySerializer(many=True),
             404: OpenApiExample("No categories found.", response_only=True, value={"detail": "No categories found."})
-        }
+        },
+        summary="List all food categories",
     )
     def get(self, request, *args, **kwargs):
         """
-        **GET**:Retrieves a list of categories with optional filtering, searching, and ordering.
+        **GET**:
+        Retrieves a list of categories with optional filtering, searching, and ordering.
 
-        URL Parameters:
-            name (str): Filter by category name.?name=fruits
-            search (str): Search categories by name or description.?search=fruit
-            ordering (str): Order by specified field, default is created_at.?ordering=-created_at
+        **URL Parameters**:
+            `name` (str): Filter by category name.?name=fruits.
+            `search`(str): Search categories by name or description.?search=fruit.
+            `ordering` (str): Order by specified field, default is created_at.?ordering=-created_at.
 
-        Returns:
+        **Returns**:
             Response (JSON): List of categories.
         """
        
@@ -118,6 +120,9 @@ class CategoryDetailAPIView(APIView):
         except Category.DoesNotExist:
             return None
 
+    @extend_schema(
+        summary="Retrieve fooditems under a specific category",
+    )
     def get(self, request, pk, *args, **kwargs):
         """
         Retrieve fooditems under specific category.
@@ -153,18 +158,20 @@ class FoodItemListAPIView(APIView):
         responses={
             200: FoodItemSerializer(many=True),
             404: OpenApiExample("No fooditems found.", response_only=True, value={"detail": "No fooditems found."})
-        }
+        },
+        summary="List all fooditems"
     )
     def get(self, request, *args, **kwargs):
         """
-        **GET**:Retrieves a list of all fooditems with optional filtering, searching, and ordering.
+        **GET**:
+        Retrieves a list of all fooditems with optional filtering, searching, and ordering.
 
-        URL Parameters:
-            name (str): Filter by fooditem name.?name=rice
-            search (str): Search fooditems by name or description.?search=rice
-            ordering (str): Order by specified field, default is created_at.?ordering=-created_at
+        **url parameters**:
+            `name` (str): Filter by fooditem name.?name=rice
+            `search` (str): Search fooditems by name or description.?search=rice
+            `ordering` (str): Order by specified field, default is created_at.?ordering=-created_at
 
-        Returns:
+        **Returns**:
             Response (JSON): List of fooditems.
         """
        
@@ -204,7 +211,7 @@ class DiningTableListAPIView(APIView):
     
     - GET: List all dining tables (with filtering, searching, and ordering).
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsCustomer]
 
     @extend_schema(
         summary="List all dining tables",
@@ -247,6 +254,9 @@ class SpecialOfferListAPIView(APIView):
 
     permission_classes = [IsAuthenticated, IsCustomer]
 
+    @extend_schema(
+            summary="List all active special offers.",
+    )
     def get(self, request, format=None):
         """
         Retrieve all the SpecialOffer  if it is active.
@@ -258,14 +268,14 @@ class SpecialOfferListAPIView(APIView):
     
 class NotificationListView(APIView):
     """
-    API view to list all notifications for the authenticated user with filtering, searching, and ordering.
+    API view to list all notifications for the customer with filtering, searching, and ordering.
 
-    Query Parameters:
-    - is_read (bool, optional): Filter notifications by read/unread status (true/false).
-    - search (str, optional): Search notifications by message content.
-    - ordering (str, optional): Order by any field, defaults to '-updated_at' (e.g., 'created_at' or '-created_at').
+    *Query parameters*:
+    - `is_read` (bool, optional): Filter notifications by read/unread status (true/false).
+    - `search` (str, optional): Search notifications by message content.
+    - `ordering` (str, optional): Order by any field, defaults to '-updated_at' (e.g., 'created_at' or '-created_at').
 
-    Responses:
+    **Responses**:
     - 200: Success, list of notifications.
     - 400: Invalid query parameters.
     """
@@ -280,7 +290,8 @@ class NotificationListView(APIView):
         responses={
             200: NotificationSerializer(many=True),
             400: OpenApiResponse(description="Invalid query parameters.")
-        }
+        },
+        summary="List all customers notifications."
     )
     def get(self, request):
         user = request.user
@@ -309,10 +320,10 @@ class NotificationDetailView(APIView):
     """
     API view to retrieve a single notification and mark it as read.
 
-    URL Parameters:
-    - pk (int): Primary key of the notification.
+   **url parameters**:
+    - `pk` (int): Primary key of the notification.
 
-    Responses:
+    **Responses**:
     - 200: Success, notification retrieved and marked as read.
     - 404: Notification not found.
     """
@@ -322,7 +333,8 @@ class NotificationDetailView(APIView):
         responses={
             200: NotificationSerializer,
             404: OpenApiResponse(description="Notification not found.")
-        }
+        },
+        summary="View details of a single notification."
     )
     def get(self, request, pk):
         notification = get_object_or_404(Notification, pk=pk, user=request.user)
@@ -340,16 +352,17 @@ class NotificationDetailView(APIView):
         responses={
             204: OpenApiResponse(description="Notification deleted."),
             404: OpenApiResponse(description="Notification not found.")
-        }
+        },
+        summary="Delete a single notification."
     )
     def delete(self, request, pk):
         """
         Deletes a single notification by its ID.
 
-        URL Parameters:
-        - pk (int): Primary key of the notification to be deleted.
+        **URL Parameters**:
+        - `pk` (int): Primary key of the notification to be deleted.
 
-        Responses:
+        **Responses**:
         - 204: Success, notification deleted.
         - 404: Notification not found.
         """
@@ -363,10 +376,10 @@ class BulkMarkAsReadView(APIView):
     """
     API view to mark multiple notifications as read.
 
-    Request Body:
-    - notification_ids (list of int): List of notification IDs to be marked as read.
+    **Request Body**:
+    - `notification_ids` (list of int): List of notification IDs to be marked as read.
 
-    Responses:
+    **Responses**:
     - 200: Success, notifications marked as read.
     - 400: Invalid request body or no notification IDs provided.
     - 404: No matching notifications found.
@@ -387,7 +400,8 @@ class BulkMarkAsReadView(APIView):
             200: OpenApiResponse(description="Notifications marked as read."),
             400: OpenApiResponse(description="Invalid request body."),
             404: OpenApiResponse(description="No matching notifications found.")
-        }
+        },
+        summary="Bulk delete notifications"
     )
     def patch(self, request):
         notification_ids = request.data.get('notification_ids', [])
@@ -410,7 +424,7 @@ class CustomerLoyaltyPointView(APIView):
     """
     Endpoint to view customer loyalty points.
     
-    Responses:
+    **Responses**:
     - 200: Success, returns the customer's loyalty points.
     - 404: Customer loyalty points not found.
     """
@@ -420,7 +434,8 @@ class CustomerLoyaltyPointView(APIView):
         responses={
             200: CustomerLoyaltyPointSerializer,
             404: OpenApiResponse(description="Loyalty points not found.")
-        }
+        },
+        summary="View customer loyalty points."
     )
     def get(self, request):
         try:
@@ -437,12 +452,11 @@ class RedemptionOptionListView(APIView):
     """
     API View to list all available redemption options with filtering, searching, and ordering.
     
-    Query Parameters:
-    - points_required (int, optional): Filter redemption options by points required.
-    - search (str, optional): Search redemption options by food item name or description.
-    - ordering (str, optional): Order by any field, default is by creation date.
+    **Query Parameters**:
+    - `points_required` (int, optional): Filter redemption options by points required.
+    - `search` (str, optional): Search redemption options by food item name or description.
 
-    Responses:
+    **Responses**:
     - 200: Success, list of redemption options.
     - 400: Invalid query parameters.
     """
@@ -457,7 +471,8 @@ class RedemptionOptionListView(APIView):
         responses={
             200: RedemptionOptionSerializer(many=True),
             400: OpenApiResponse(description="Invalid query parameters.")
-        }
+        }, 
+        summary="List all redemption options."
     )
     def get(self, request, *args, **kwargs):
         """
@@ -476,9 +491,6 @@ class RedemptionOptionListView(APIView):
         if search_query:
             options = options.filter(Q(fooditem__name__icontains=search_query) | Q(description__icontains=search_query))
 
-        # Ordering options (default is by most recent)
-        ordering = request.query_params.get('ordering', 'points_required')
-        options = options.order_by(ordering)
 
         serializer = RedemptionOptionSerializer(options, many=True)
         logger.info(f"Listed redemption options for user {request.user.username}.")
@@ -489,13 +501,13 @@ class RedeemLoyaltyPointsAPIView(APIView):
     """
     Endpoint to redeem customer loyalty points for a redemption option.
 
-    URL Parameters:
+    **URL Parameters**:
     - redemption_id (int): The ID of the redemption option to redeem points for.
 
-    Request Body:
+    **Request Body**:
     - Empty body.
 
-    Responses:
+    **Responses**:
     - 201: Success, points redeemed.
     - 400: Not enough points or invalid request.
     - 404: Redemption option not found.
@@ -507,7 +519,8 @@ class RedeemLoyaltyPointsAPIView(APIView):
             201: OpenApiResponse(description="Successfully redeemed points."),
             400: OpenApiResponse(description="Not enough points or invalid request."),
             404: OpenApiResponse(description="Redemption option not found.")
-        }
+        },
+        summary="Redeem loyalty points."
     )
     def post(self, request, redemption_id, *args, **kwargs):
         try:

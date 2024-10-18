@@ -43,7 +43,8 @@ class RedemptionOptionListCreateView(APIView):
         responses={
             200: RedemptionOptionSerializer(many=True),
             400: OpenApiResponse(description="Invalid request or query."),
-        }
+        },
+        summary="List all redemption options"
     )
     def get(self, request, *args, **kwargs):
         """
@@ -73,6 +74,7 @@ class RedemptionOptionListCreateView(APIView):
             201: RedemptionOptionSerializer,
             400: OpenApiResponse(description="A redemption option with this food item already exists."),
         },
+        summary="creates a new redemption option",
         description="""
         Create a new redemption option by passing the `fooditem_id` in the request body.
 
@@ -140,7 +142,8 @@ class RedemptionOptionDetailView(APIView):
         responses={
             200: RedemptionOptionSerializer,
             404: OpenApiResponse(description="Redemption Option not found."),
-        }
+        },
+        summary="detail redemption option"
     )
     def get(self, request, pk, *args, **kwargs):
         """
@@ -155,7 +158,8 @@ class RedemptionOptionDetailView(APIView):
         responses={
             200: RedemptionOptionSerializer,
             400: OpenApiResponse(description="Invalid data."),
-        }
+        },
+        summary="uppdates a redemption option"
     )
     def put(self, request, pk, *args, **kwargs):
         """
@@ -175,7 +179,8 @@ class RedemptionOptionDetailView(APIView):
         responses={
             204: OpenApiResponse(description="Redemption option deleted."),
             404: OpenApiResponse(description="Redemption Option not found."),
-        }
+        },
+        summary="deletes a redemption option"
     )
     def delete(self, request, pk, *args, **kwargs):
         """
@@ -207,7 +212,8 @@ class RedemptionTransactionListView(APIView):
             OpenApiParameter(name='search', description='Search by food item name', required=False, type=str),
             OpenApiParameter(name='ordering', description='Order by field', required=False, type=str),
         ],
-        responses={200: RedemptionTransactionSerializer(many=True)}
+        responses={200: RedemptionTransactionSerializer(many=True)},
+        summary="List all redemption option transactions"
     )
     def get(self, request, *args, **kwargs):
         transactions = RedemptionTransaction.objects.select_related('redemption_option__fooditem').all()
@@ -248,7 +254,8 @@ class RedemptionTransactionDetailView(APIView):
         responses={
             200: RedemptionTransactionSerializer,
             404: OpenApiResponse(description="Transaction not found."),
-        }
+        },
+        summary="detail for a redemption option transaction"
     )
     def get(self, request, pk, *args, **kwargs):
         """
@@ -262,7 +269,8 @@ class RedemptionTransactionDetailView(APIView):
         responses={
             204: OpenApiResponse(description="Transaction deleted."),
             400: OpenApiResponse(description="Cannot delete unless delivered."),
-        }
+        },
+        summary="deletes a redemption option transaction"
     )
     def delete(self, request, pk, *args, **kwargs):
         """
@@ -291,7 +299,8 @@ class MarkRedemptionTransactionDeliveredView(APIView):
             raise ValidationError("Transaction not found")
 
     @extend_schema(
-        responses={200: RedemptionTransactionSerializer}
+        responses={200: RedemptionTransactionSerializer},
+        summary="mark a redemption transaction as delivered"
     )
     def patch(self, request, pk, *args, **kwargs):
         """

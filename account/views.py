@@ -28,6 +28,7 @@ class RoleBasedRedirectAPIView(APIView):
 
    permission_classes = [IsAuthenticated]
 
+
    def get(self, request):
       role = request.user.role
 
